@@ -42,10 +42,15 @@ BUILD_DIR=./build
 # Gets all the source codes
 SRCS=$(wildcard $(SOURCES_DIR)/*.cpp)
 
+APP_NAME=termsequel.out
 
 OBJS=$(patsubst $(SOURCES_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
-all: $(OBJS)
+all: $(APP_NAME)
+
+# Create the executable.
+$(APP_NAME): termsequel.cpp $(OBJS)
+	@$(CPP) $(CPP_FLAGS) $(CPP_VERSION) $(OPTIONAL_FLAGS) -o $@ $^
 
 # Compile all the sources
 $(BUILD_DIR)/%.o: $(SOURCES_DIR)/%.cpp $(HEADERS_DIR)/%.hpp
