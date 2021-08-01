@@ -7,13 +7,14 @@
 namespace Termsequel {
 
     enum TOKEN_TYPE {
-        SELECT = 0,     // SQL SELECT KEYWORD
-        FROM = 1,       // SQL FROM KEYWORD
-        WHERE = 2,      // SQL WHERE KEYWORD
-        IDENTIFIER = 3, // An identifer. A directory name, file name for example
-        UNKNOWN = 4,    // Invalid. Unreconized token
-        COMMA = 5,      // Comma to separate columns 
-        NAME = 6        // NAME column. 
+        UNKNOWN,    // Invalid. Unreconized token
+        COMMA,      // Comma to separate columns 
+        SELECT,     // SQL SELECT KEYWORD
+        FROM,       // SQL FROM KEYWORD
+        WHERE,      // SQL WHERE KEYWORD
+        NAME,       // NAME column. 
+        SIZE,       // SIZE column.
+        IDENTIFIER  // An identifer. A directory name, file name for example
     };
 
     extern const char * const TokenMap[];
@@ -33,6 +34,7 @@ namespace Termsequel {
             );
             TOKEN_TYPE get_type();
             std::string get_value();
+            bool is_terminal();
     
     };
 
