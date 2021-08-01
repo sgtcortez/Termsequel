@@ -19,7 +19,7 @@
 namespace Termsequel {
 
     // Read the user input, and, split the raw string input, into an array of values splited by whitespace.
-    static constexpr const char * const NON_WHITESPACES_REGEX = "[\\S*].[\\S]+";
+    static constexpr const char * const NON_WHITESPACES_REGEX = "(\\S)*(\\w+|,)(\\S)*";
 }
 
 Termsequel::Lexical::Lexical(std::string raw_input) {
@@ -43,12 +43,14 @@ Termsequel::Lexical::Lexical(std::string raw_input) {
             tmp.pop_back(); // remove the right double quote
             const char *cstring = tmp.data()+1; // remove the start double quote, a very hacky way to do this. 
             tokens.push_back(Token(token_type, cstring));
+        } else if ( token_type == UNKNOWN ) {
+            // should reject here ...
         } else {
             tokens.push_back(Token(token_type, ""));
         }
 
         #ifdef DEBUG_LEXICAL
-                std::cout << "Found match: " <<  match_str << " Token type type: " << get_token_type_name(token_type) << std::endl;
+                std::cout << "Found match: " <<  match_str << " Token type: " << get_token_type_name(token_type) << std::endl;
         #endif
     }
 
