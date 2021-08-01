@@ -1,12 +1,16 @@
+#include <cstdio>
 #include <unistd.h>
 
 #include <cstdlib>
 #include <iostream>
 #include <string>
 
+#include "include/compiler.hpp"
 
 static constexpr const char *short_options = "f:h";
 static constexpr const char *VERSION = "0.1";
+
+using namespace Termsequel;
 
 void show_help(
     char *filename,
@@ -25,11 +29,22 @@ int main (
         
         switch (option) {
             case 'f':
+                // TODO 
                 break;
             case 'h':
                 show_help(binary_name, stdout);
                 break;
         }
+    }
+    
+    if (optind == argc) {
+        // invalid. SQL wasnt provided
+        show_help(binary_name, stderr);
+        return 1;
+    } else {
+        std::string sql = argv[argc - 1];
+        Compiler compiler(sql);
+        compiler.execute();
     }
 
 
