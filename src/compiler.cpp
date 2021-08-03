@@ -1,8 +1,13 @@
+#include <algorithm>
 #include <cstdint>
+#include <map>
 #include <regex>
+#include <sstream>
+#include <streambuf>
 #include <string>
 #include <utility>
 #include <iostream>
+#include <vector>
 
 #include "compiler.hpp"
 
@@ -140,73 +145,61 @@ namespace Termsequel {
             }
     };
 
+    class Grammar {
+        private:
+            std::vector<TOKEN_TYPE> expectations;
+        private:
+        public:
+            Grammar(TOKEN_TYPE token){ 
+                expectations.push_back(token);
+            };
+            Grammar(TOKEN_TYPE token, TOKEN_TYPE token2){ 
+                expectations.push_back(token);
+                expectations.push_back(token2);
+            };
+            
+            bool match(TOKEN_TYPE type) {
+                return std::find((expectations).begin(), (expectations).end(), type) != (expectations).end();
+            };
+    };
+
     class Syntax {
 
         private:
             std::vector<std::string> errors_list;
+            std::map<TOKEN_TYPE, Grammar> *grammars; 
         public:
-            Syntax() {}
+            Syntax() {
+                grammars = new std::map<TOKEN_TYPE, Grammar>;
+                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(SELECT, Grammar(NAME, SIZE)));
+                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(COMMA, Grammar(NAME, SIZE)));
+                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(NAME, Grammar(COMMA, FROM)));
+                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(SIZE, Grammar(COMMA, FROM)));
+                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(FROM, Grammar(IDENTIFIER)));
+            }
+            ~Syntax() {
+                delete grammars;
+            }
             std::vector<std::string> get_errors() {
                 return this->errors_list;
             }
             bool analyse(Lexical &lexical) {
-                // Given a token, what are expected token
-                std::vector<TOKEN_TYPE> expectations;
+                
+                auto previous = lexical.next_token();
 
-                while(lexical.has_next()) {
-
+                while (lexical.has_next()) {
                     auto token = lexical.next_token();
-
-                    if (token.get_type() == UNKNOWN) {
-                        // error
-                        errors_list.push_back("Unknown token received!");
+                    if (grammars->find(previous.get_type())->second.match(token.get_type())) {
+                        // OK, grammar is ok
+                        previous = token;
+                    } else {
+                        // invalid grammar
+                        std::ostringstream string_buffer;
+                        string_buffer << "Error! Invalid Token!";  
+                        string_buffer << "\tFrom the token: " << get_token_type_name(previous.get_type()) << ".";
+                        errors_list.push_back(string_buffer.str());
                         break;
                     }
-
-                    if (expectations.size() != 0) {
-                        // check expectations
-                        if (std::find(expectations.begin(), expectations.end(), token.get_type()) != expectations.end()) {
-                            expectations.clear();
-                            // ok, found
-                        } else {
-                            // not found
-                            std::string str = "Expectation failed! Received token: ";
-                            str.append(get_token_type_name(token.get_type()));
-                            str.append(" Expected: [ "); 
-                            for(auto element : expectations) {
-                                str.append(get_token_type_name(element));
-                                str.append(" ");
-                            }
-                            str.append("]");
-                            errors_list.push_back(str);
-                            break;
-                        }
-                    }
-
-                    switch (token.get_type()) {
-                        case SELECT:
-                        case COMMA:
-                            expectations.push_back(NAME);
-                            expectations.push_back(SIZE);                
-                            break;
-                        case NAME:
-                        case SIZE:
-                            expectations.push_back(COMMA);
-                            expectations.push_back(FROM);
-                            break;        
-                        case FROM:
-                            expectations.push_back(IDENTIFIER);
-                            break;
-                        default:
-                            // IDENTIFIER
-                            if (lexical.has_next()) {
-                                // invalid.
-                                errors_list.push_back("IDENTIFIER is the terminal!");
-                                return false;
-                            }
-                            break;
-                    }
-
                 }
                 return errors_list.size() == 0;                
             }
