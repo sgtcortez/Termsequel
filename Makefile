@@ -42,7 +42,8 @@ BUILD_DIR=./build
 # Gets all the source codes
 SRCS=$(wildcard $(SOURCES_DIR)/*.cpp)
 
-APP_NAME=termsequel.out
+# The binary name
+APP_NAME=termsequel
 
 OBJS=$(patsubst $(SOURCES_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
@@ -52,6 +53,15 @@ all: $(APP_NAME)
 $(APP_NAME): termsequel.cpp $(OBJS)
 	@$(CPP) $(CPP_FLAGS) $(CPP_VERSION) $(OPTIONAL_FLAGS) -o $@ $^
 
+# Must be run with super user privilegies
+install: $(APP_NAME)
+	cp $(APP_NAME) /usr/local/bin
+
 # Compile all the sources
 $(BUILD_DIR)/%.o: $(SOURCES_DIR)/%.cpp $(HEADERS_DIR)/%.hpp
 	@$(CPP) $(CPP_FLAGS) $(CPP_VERSION) $(OPTIONAL_FLAGS) -I $(HEADERS_DIR) $(LINKER) -c -o $@ $<
+
+.PHONY: clean
+
+clean: 
+	rm -Rf $(BUILD_DIR) $(APP_NAME)

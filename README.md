@@ -1,6 +1,7 @@
 # Summary
 - [Termsequel](#Termsequel)    
     - [What is](#What-is)
+    - [Installation](#Installation)
 - [Users](#Users)
     + [Features](#Features)
         + [Columns](#Columns)
@@ -15,6 +16,18 @@ Bringing SQL to our filesystem.
     Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.    
     I am using C++, because, it is modern, nice, portable, and, I wanna learn it.    
     I am trying to learn compilers too, because of that, I havent use yacc & lex, and, I am building my own(Makes more portable too).
+
+- ## Installation
+
+    To install **Termsequel** on your operating system, just run(with superuser privilegies):   
+    ```bash
+    make install
+    ```
+
+    To create the binary to be executed, just run:     
+    ```bash
+    make
+    ```
 
 # Users
 Some advices to run **Termsequel**.   
