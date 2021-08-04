@@ -98,6 +98,8 @@ namespace Termsequel {
         public:
             Lexical(std::string raw_input) {
 
+                // TODO: Do not use regex. Find token online(when syntax requests, it must execute the next token), then, it should execute.
+
                 // Read the user input, and, split the raw string input, into an array of values splited by whitespace.
                 static constexpr const char * const NON_WHITESPACES_REGEX = "(\\S)*(\\w+|,)(\\S)*";
 
@@ -222,19 +224,19 @@ void Termsequel::Compiler::execute() {
         return;
     } 
 
+    // resets to the first token
     lexical.reset();
 
-    // Terminal token
+    // SELECT token
     auto token = lexical.next_token();
 
+    // until reache the terminal token(which contains the file name)
     while (lexical.has_next()) token = lexical.next_token();
 
     auto vector = System::get_information(token.get_value());
-    if (vector) {
-        for(auto element: *vector) {
-            std::cout << "Filename: " << element->get_name() << " Size: " << element->get_size() << std::endl;
-            delete element;
-        }
-    }    
+    for(auto element: *vector) {
+        std::cout << "Filename: " << element->get_name() << " Size: " << element->get_size() << std::endl;
+        delete element;
+    }
     delete vector;
 }
