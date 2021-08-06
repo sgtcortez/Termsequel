@@ -56,19 +56,19 @@ The system is not thread safe, because, there is no need to this. Well, at least
     - ### SELECT
 
         The same syntax as a SQL database.    
-        **Termsequel SELECT syntax:** `SELECT COLUMN_LIST FROM "FILE"` 
+        **Termsequel SELECT syntax:** `SELECT COLUMN_LIST FROM FILE` 
 
         **Example:** *"SELECT"* syntax 
         ```sql
-        SELECT NAME FROM "<FILE>"    
+        SELECT NAME FROM <FILE>    
         -- <FILE> is a placeholder. File can be a regular file, and a directory
         ```
 
         **Example:** Selecting names from user documents directory.    
         ```sql
-        SELECT NAME FROM "/home/user/documents"
+        SELECT NAME FROM /home/user/documents
         -- OR, with shell expansion variables    
-        SELECT NAME FROM "$HOME/documents"
+        SELECT NAME FROM $HOME/documents
         ```
 
 

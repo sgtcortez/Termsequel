@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <map>
-#include <regex>
 #include <sstream>
 #include <streambuf>
 #include <string>
@@ -31,7 +31,8 @@ namespace Termsequel {
         WHERE,      // SQL WHERE KEYWORD
         NAME,       // NAME column. 
         SIZE,       // SIZE column.
-        IDENTIFIER  // An identifer. A directory name, file name for example
+        IDENTIFIER, // An identifer. A directory name, file name for example
+        TOKEN_END   // There are no more token.
     };
 
     static constexpr const char * const TokenMap[] = {
@@ -42,24 +43,12 @@ namespace Termsequel {
         "WHERE",
         "NAME",
         "SIZE",
-        "IDENTIFIER"
+        "IDENTIFIER",
+        "TOKEN_END"
     };
 
     static constexpr const char * get_token_type_name(TOKEN_TYPE token) {
         return TokenMap[token];
-    }
-
-    static TOKEN_TYPE get_token_type_by_name(std::string raw_value) {
-        static constexpr const char * TOKEN_IDENTIFIER_REGEX = "^\"[\\w\\./]+\"$";
-
-        if (raw_value == "SELECT") return SELECT;
-        if (raw_value == "FROM")   return FROM;
-        if (raw_value == "WHERE")  return WHERE;
-        if (raw_value == "NAME")   return NAME;
-        if (raw_value == "SIZE")   return SIZE;
-        if (raw_value == "," )     return COMMA;
-        if (std::regex_match(raw_value, std::regex(TOKEN_IDENTIFIER_REGEX))) return IDENTIFIER;
-        return UNKNOWN; 
     }
 
     class Token {
@@ -94,52 +83,56 @@ namespace Termsequel {
         private:
             std::string raw_input;
             uint32_t current_index;
-            std::vector<Token> tokens;
         public:
             Lexical(std::string raw_input) {
-
-                // TODO: Do not use regex. Find token online(when syntax requests, it must execute the next token), then, it should execute.
-
-                // Read the user input, and, split the raw string input, into an array of values splited by whitespace.
-                static constexpr const char * const NON_WHITESPACES_REGEX = "(\\S)*(\\w+|,)(\\S)*";
-
                 this->raw_input = raw_input;
-                this->current_index = 0;
-
-                const std::regex word_regex(NON_WHITESPACES_REGEX);
-
-                const auto words_begin = std::sregex_iterator(this->raw_input.begin(), this->raw_input.end(), word_regex);
-                const auto words_end = std::sregex_iterator();
-
-                for (auto i = words_begin; i != words_end; ++i) {
-                    std::smatch match = *i;
-                    std::string match_str = match.str();
-                    const auto token_type = get_token_type_by_name(match_str);
-
-                    if (token_type == IDENTIFIER) {
-                        std::string tmp = match_str;
-                        // TODO: Fix it, find a way to remove the double quotes without the need to duplicate strings
-                        tmp.pop_back(); // remove the right double quote
-                        const char *cstring = tmp.data()+1; // remove the start double quote, a very hacky way to do this. 
-                        tokens.push_back(Token(token_type, cstring));
-                    } else if ( token_type == UNKNOWN ) {
-                        // should reject here ...
-                    } else {
-                        tokens.push_back(Token(token_type, ""));
-                    }
-
-                    #ifdef DEBUG_COMPILER
-                            std::cout << "Found match: " <<  match_str << " Token type: " << get_token_type_name(token_type) << std::endl;
-                    #endif
-                }
+                current_index = 0;
             }
 
             Token next_token() {
-                return tokens[current_index++];
-            }
-
-            bool has_next() {
-                return tokens.size() > current_index;
+                while(true) {
+                    if ( current_index >= raw_input.size() || raw_input[current_index] != ' ' ) break;
+                    current_index++;
+                }
+                if (current_index >= raw_input.size()) return Token(TOKEN_END, "");
+                auto tmp_index = raw_input.find(' ', current_index);
+                if (tmp_index == std::string::npos) {
+                    // Reached the end of the input
+                    std::string identifier = raw_input.substr(current_index);
+                    current_index = raw_input.size();
+                    return Token(IDENTIFIER, identifier);    
+                } else {
+                    // updates the current index
+                    const auto substring = raw_input.substr(current_index, tmp_index - current_index);
+                    if (substring[0] == ',') {
+                        // comma is the first character
+                        // something like
+                        // SELECT NAME ,SIZE ...
+                        current_index++;
+                        return Token(COMMA, "");
+                    } else {
+                        const auto comma_index = substring.find(",");
+                        if (comma_index != std::string::npos) {
+                            // has comma, but, is not the first character
+                            tmp_index = current_index + comma_index;
+                        } 
+                    }
+                    const char *tmp_string = raw_input.c_str()+current_index;
+                    auto difference = tmp_index - current_index;
+                    current_index = tmp_index;
+                    if ( strncmp(tmp_string, "SELECT", difference) == 0 ) {
+                        return Token(SELECT, "");    
+                    } else if ( strncmp(tmp_string, "NAME", difference) == 0 ) {
+                        return Token(NAME, "");
+                    } else if ( strncmp(tmp_string, "SIZE", difference) == 0 ) {
+                        return Token(SIZE, "");
+                    } else if ( strncmp(tmp_string, "FROM", difference)  == 0) {
+                        return Token(FROM, "");
+                    } else {
+                        // unknown token
+                        return Token(UNKNOWN, "");
+                    }   
+                }
             }
 
             void reset() {
@@ -188,12 +181,12 @@ namespace Termsequel {
             bool analyse(Lexical &lexical) {
                 
                 auto previous = lexical.next_token();
-
-                while (lexical.has_next()) {
-                    auto token = lexical.next_token();
+                auto token = lexical.next_token();
+                while (token.get_type() != TOKEN_END) {
                     if (grammars->find(previous.get_type())->second.match(token.get_type())) {
                         // OK, grammar is ok
                         previous = token;
+                        token = lexical.next_token();
                     } else {
                         // invalid grammar
                         std::ostringstream string_buffer;
@@ -231,7 +224,12 @@ void Termsequel::Compiler::execute() {
     auto token = lexical.next_token();
 
     // until reache the terminal token(which contains the file name)
-    while (lexical.has_next()) token = lexical.next_token();
+    while (true) {
+        token = lexical.next_token();
+
+        // found the identifier token
+        if (token.get_type() == IDENTIFIER) break;
+    }
 
     auto vector = System::get_information(token.get_value());
     for(auto element: *vector) {
