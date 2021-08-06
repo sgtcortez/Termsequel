@@ -32,8 +32,9 @@ int main (
                 // TODO 
                 break;
             case 'h':
+                // show help and exits
                 show_help(binary_name, stdout);
-                break;
+                return 0;
         }
     }
     
@@ -60,8 +61,11 @@ void show_help(
         "\nOptions:" 
         "\n -h Show this help."   
         "\n -f Read from file, instead of stdin."
+        "\nColumns available:"
+        "\n NAME Filename"
+        "\n SIZE Filesize"
         "\nSQL instructions available" 
-        "\n SELECT Example: SELECT NAME FROM \"DIRECTORY\""    
+        "\n SELECT Example: SELECT NAME FROM DIRECTORY"    
         "\nVersion: %s.\n"; 
     fprintf(stream, message.c_str(), filename, VERSION);
 }
