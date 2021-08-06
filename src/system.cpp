@@ -1,42 +1,60 @@
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <streambuf>
+#include <sstream>
+
 
 #include <vector>
 
 #include "system.hpp"
 
-namespace Termsequel {
+// Stores the members that are useful to store
+// from stat result
+struct StatResult {        
+    std::uint64_t size;
+    // does not return from stat
+    std::string filename;
+};
 
-    static constexpr const std::uint16_t DIRECTORY_TYPE    = S_IFDIR;
-    static constexpr const std::uint16_t REGULAR_FILE_TYPE = S_IFREG; 
+// Returns the information about a directory and all its subdirectories/files
+static std::vector<struct StatResult *> * get_directory_information(std::string name);
+static std::vector<struct StatResult *> * get_information(std::string name);
 
+
+std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *command) {
+
+    // convert the raw input from stat to a beautiful input, considering user column order
+    const auto stat_array = get_information(command->target);
+    const auto rows = new std::vector<std::string *>;
+
+    for (const auto stat_element : *stat_array ) {
+        auto string = new std::string;
+        for (const auto column: command->columns) {
+            if ( column == FILENAME ) {
+                string->append("Filename: ");
+                string->append(stat_element->filename); 
+                string->append(" ");
+            } 
+            if ( column == FILESIZE ) {
+                string->append("Filesize: ");
+                string->append(std::to_string(stat_element->size)); 
+                string->append(" ");            
+            }
+        }
+        rows->push_back(string);
+        delete stat_element;
+    }
+    delete stat_array;
+    return rows;
 };
 
 
-static std::vector<Termsequel::ResultRow *> * get_directory_information(std::string name);
-
-
-Termsequel::ResultRow::ResultRow(
-    struct stat &stat_buffer,
-    std::string name
-) {
-    this->size = stat_buffer.st_size;
-    this->name = name;
-}
-
-std::uint64_t Termsequel::ResultRow::get_size() {
-    return this->size;
-}
-
-std::string Termsequel::ResultRow::get_name() {
-    return this->name;
-}
-
-std::vector<Termsequel::ResultRow *> * Termsequel::System::get_information(std::string filename) {
+static std::vector<struct StatResult *> * get_information(std::string filename) {
 
     // check if file is directory, if so, iterate over directory(might go recursively)
     // otherwise, just return information about the specific file
@@ -46,30 +64,36 @@ std::vector<Termsequel::ResultRow *> * Termsequel::System::get_information(std::
     if ( stat(filename.c_str(), &stat_buffer ) != 0 ) {
         // error
         // Could not stat
-        return new std::vector<ResultRow *>;
+        // returns empty vector
+        return new std::vector<struct StatResult *>;
     } 
 
-    if ( stat_buffer.st_mode & DIRECTORY_TYPE ) {
+
+    if ( stat_buffer.st_mode & S_IFDIR ) {
         // directory 
         return get_directory_information(filename);
-    } else if ( stat_buffer.st_mode & REGULAR_FILE_TYPE ) {
+    } else if ( stat_buffer.st_mode & S_IFREG ) {
         // Regular file
-        auto row = new ResultRow(stat_buffer, filename);
-        auto vector = new std::vector<ResultRow *>;
-        vector->push_back(row);
+
+        // Store the stat result in the heap
+        auto stat_value = new struct StatResult;
+        stat_value->filename = filename;
+        stat_value->size = stat_buffer.st_size;
+        auto vector = new std::vector<struct StatResult *>;
+        vector->push_back(stat_value);
         return vector;
     }
     
-    // unsupported type
-    return new std::vector<ResultRow *>;
+    // unsupported type, for now, returns empty vector
+    return new std::vector<struct StatResult *>;
 }
 
-static std::vector<Termsequel::ResultRow *> * get_directory_information(std::string name) {
+static std::vector<struct StatResult *> * get_directory_information(std::string name) {
 
     DIR *directory = opendir(name.c_str());
     struct dirent *directory_entry = nullptr;
     if (directory == nullptr) return nullptr;
-    auto vector = new std::vector<Termsequel::ResultRow *>;
+    auto vector = new std::vector<struct StatResult *>;
     while(true) {
         directory_entry = readdir(directory);
         if ( !(directory_entry))  {
@@ -83,10 +107,11 @@ static std::vector<Termsequel::ResultRow *> * get_directory_information(std::str
         // or, use the fstat function. Then, we can pass only the directory fd and the file name
         std::string relative_path = name + "/" + directory_entry->d_name;
 
-        auto info_vector = Termsequel::System::get_information(relative_path);
+        auto info_vector = get_information(relative_path);
         for ( auto element : *info_vector) {
             vector->push_back(element);
         }
+        // deletes the old vector
         delete info_vector;
     }
     closedir(directory);

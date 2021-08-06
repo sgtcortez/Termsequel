@@ -11,24 +11,28 @@
 
 namespace Termsequel {
 
-    // Usually, will be a stat system call wrapper
-    class ResultRow {
-        private:
-            std::uint64_t size;
-            std::string name;
-            std::uint8_t permissions[3];
-        public:
-            ResultRow(
-                struct stat &stat_buffer, 
-                std::string name
-            );
-            std::uint64_t get_size();
-            std::string get_name();
+    enum COMMAND_TYPE {
+        LIST // For now, just the list command is available
+    };
+
+    enum COLUMN_TYPE {
+        FILENAME, // name of the file
+        FILESIZE // size of the file
+    };
+
+    // Represents an execution command
+    struct Command { 
+        COMMAND_TYPE command; // the command to be executed
+        std::vector<COLUMN_TYPE> columns; // the columns 
+        std::string target; // the target file/directory
+
     };
 
     class System {
         public:
-            static std::vector<ResultRow *> * get_information(std::string filename);
+
+            // Executes the command, and return the list of elements
+            static std::vector<std::string *> * execute(Command *command);
     };
 
 };

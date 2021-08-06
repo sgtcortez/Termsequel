@@ -217,24 +217,40 @@ void Termsequel::Compiler::execute() {
         return;
     } 
 
-    // resets to the first token
+    // Sets to the first position.
     lexical.reset();
 
-    // SELECT token
+    // for now, just list is implemented
+    auto command_type = LIST;
+
+    // command
     auto token = lexical.next_token();
 
-    // until reache the terminal token(which contains the file name)
-    while (true) {
+    std::vector<COLUMN_TYPE> columns; 
+
+    do {
         token = lexical.next_token();
+        if (token.get_type() == NAME) {
+            columns.push_back(FILENAME);
+        } else if (token.get_type() == SIZE) {
+            columns.push_back(FILESIZE);
+        }
+    } while (token.get_type() != FROM);
 
-        // found the identifier token
-        if (token.get_type() == IDENTIFIER) break;
-    }
+    // identifier token
+    token = lexical.next_token();
+    std::string target = token.get_value();
 
-    auto vector = System::get_information(token.get_value());
-    for(auto element: *vector) {
-        std::cout << "Filename: " << element->get_name() << " Size: " << element->get_size() << std::endl;
+    const auto command = new Command();
+    command->command = command_type;
+    command->columns = columns;
+    command->target = target;
+
+    const auto rows = System::execute(command); 
+    for (const auto element : *rows) {
+        std::cout << *element << std::endl;
         delete element;
     }
-    delete vector;
+    delete rows;
+    delete command;
 }
