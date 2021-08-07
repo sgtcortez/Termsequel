@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -32,23 +33,67 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
     const auto stat_array = get_information(command->target);
     const auto rows = new std::vector<std::string *>;
 
+    // output rule. Values must be padded 
+    // Starts with the default column name
+    std::size_t bigger_filename = strlen("Filename");
+    std::size_t bigger_column = strlen("Size");
+
+    for (const auto stat_element : *stat_array ) {
+        for (const auto column: command->columns) {
+            if ( column == FILENAME ) {
+                if ( stat_element->filename.size() > bigger_filename ) {
+                    bigger_filename = stat_element->filename.size();
+                }
+            } 
+            if ( column == FILESIZE ) {
+                std::string number_string = std::to_string(stat_element->size);
+                if (number_string.size() > bigger_column) {
+                    bigger_column = number_string.size();
+                }
+            }
+        }
+    }
+
+    // Creates the ouput
+    // Should be something like:  
+    // Filename | Size
+    // name       10
+    // name220  | 100
+
+    auto header = new std::string;
+    for (const auto column: command->columns) {
+        if ( column == FILENAME ) {
+            header->append(" Filename");
+            header->insert(header->end(), bigger_filename - strlen("Filename"), ' ');
+        } 
+        if ( column == FILESIZE ) {
+            header->append(" Size");
+            header->insert(header->end(), bigger_column - strlen("Size"), ' ');           
+        }
+    }
+    rows->push_back(header);
+
+    // Should use MOVE
+    header = nullptr;
+
     for (const auto stat_element : *stat_array ) {
         auto string = new std::string;
         for (const auto column: command->columns) {
             if ( column == FILENAME ) {
-                string->append("Filename: ");
+                string->push_back(' ');
                 string->append(stat_element->filename); 
-                string->append(" ");
+                string->insert(string->end(), bigger_filename - stat_element->filename.size(), ' ');
             } 
             if ( column == FILESIZE ) {
-                string->append("Filesize: ");
-                string->append(std::to_string(stat_element->size)); 
-                string->append(" ");            
+                std::string column_value = std::to_string(stat_element->size);
+                string->push_back(' ');
+                string->append(column_value); 
+                string->insert(string->end(), bigger_column - column_value.size() , ' ');
             }
         }
         rows->push_back(string);
         delete stat_element;
-    }
+    }    
     delete stat_array;
     return rows;
 };
