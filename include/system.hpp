@@ -11,11 +11,11 @@
 
 namespace Termsequel {
 
-    enum COMMAND_TYPE {
+    enum class COMMAND_TYPE {
         LIST // For now, just the list command is available
     };
 
-    enum COLUMN_TYPE {
+    enum class COLUMN_TYPE {
         FILENAME, // name of the file
         FILESIZE // size of the file
     };
@@ -25,7 +25,6 @@ namespace Termsequel {
         COMMAND_TYPE command; // the command to be executed
         std::vector<COLUMN_TYPE> columns; // the columns 
         std::string target; // the target file/directory
-
     };
 
     class System {
