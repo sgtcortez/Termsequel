@@ -40,12 +40,12 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
 
     for (const auto stat_element : *stat_array ) {
         for (const auto column: command->columns) {
-            if ( column == FILENAME ) {
+            if ( column == COLUMN_TYPE::FILENAME ) {
                 if ( stat_element->filename.size() > bigger_filename ) {
                     bigger_filename = stat_element->filename.size();
                 }
             } 
-            if ( column == FILESIZE ) {
+            if ( column == COLUMN_TYPE::FILESIZE ) {
                 std::string number_string = std::to_string(stat_element->size);
                 if (number_string.size() > bigger_column) {
                     bigger_column = number_string.size();
@@ -62,11 +62,11 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
 
     auto header = new std::string;
     for (const auto column: command->columns) {
-        if ( column == FILENAME ) {
+        if ( column == COLUMN_TYPE::FILENAME ) {
             header->append(" Filename");
             header->insert(header->end(), bigger_filename - strlen("Filename"), ' ');
         } 
-        if ( column == FILESIZE ) {
+        if ( column == COLUMN_TYPE::FILESIZE ) {
             header->append(" Size");
             header->insert(header->end(), bigger_column - strlen("Size"), ' ');           
         }
@@ -79,12 +79,12 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
     for (const auto stat_element : *stat_array ) {
         auto string = new std::string;
         for (const auto column: command->columns) {
-            if ( column == FILENAME ) {
+            if ( column == COLUMN_TYPE::FILENAME ) {
                 string->push_back(' ');
                 string->append(stat_element->filename); 
                 string->insert(string->end(), bigger_filename - stat_element->filename.size(), ' ');
             } 
-            if ( column == FILESIZE ) {
+            if ( column == COLUMN_TYPE::FILESIZE ) {
                 std::string column_value = std::to_string(stat_element->size);
                 string->push_back(' ');
                 string->append(column_value); 

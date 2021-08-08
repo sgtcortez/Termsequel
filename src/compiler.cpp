@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "compiler.hpp"
+#include "system.hpp"
 
 namespace Termsequel {
     
@@ -161,7 +162,40 @@ namespace Termsequel {
             };
     };
 
-
+    bool match(
+        Token token, 
+        Token received
+    ) {
+        switch (token) {
+            case SELECT:
+                // SELECT NAME ...  OR SELECT SIZE ...
+                return (received == NAME || received == SIZE);
+            case NAME:
+                // since NAME and SIZE point to the same value, we do not need to handle them
+                // they both are columns
+                // SELECT NAME, ... OR SELECT NAME FROM ... OR SELECT ... WHERE NAME = ...
+                return (received == COMMA || received == FROM || received == EQUAL);
+            case COMMA:
+                // name and size point to the same value
+                // SELECT ..., NAME OR SELECT ..., SIZE 
+                return (received == NAME || received == SIZE);
+            case FROM:
+                // SELECT ... FROM USER_DEFINED_VALUE
+                return (received == IDENTIFIER);
+            case WHERE:
+                // SELECT ... FROM IDENTIFIER WHERE NAME OR SELECT ... FROM IDENTIFIER WHERE SIZE 
+                return (received == NAME || received == SIZE);
+            case EQUAL:
+                // SELECT ... WHERE NAME = ... 
+                return (received == IDENTIFIER);
+            case IDENTIFIER:
+                // since the where is optional, the expected value from identifier can be the where and the end
+                // SELECT ... FROM USER_DEFINED_VALUE OR SELECT .. FROM USER_DEFINED_VALUE WHERE COLUMN = USER_DEFINED_VALUE
+                return (received == WHERE || received == END);
+            case END:
+                // THE END OF THE INPUT STREAM
+                return true;
+        };
     };
 };
 
@@ -171,9 +205,66 @@ Termsequel::Compiler::Compiler(std::string raw_input) {
 
 void Termsequel::Compiler::execute() {
 
+    Lexical lex(this->raw_input);
+    std::vector<Lexeme*> lexemes;
 
+    while (true) {
+        const auto lexeme = lex.next();
+        std::cout << *lexeme << std::endl;
+        lexemes.push_back(lexeme);
+        if ((*lexeme).token == END) break;
+    }
 
+    for (unsigned long index = 1L; index < lexemes.size(); index ++) {
+        const auto previous = lexemes[index - 1];
+        const auto current = lexemes[index];
+        if (!(match(previous->token, current->token))) {
+            std::cerr << "Invalid SYNTAX!" << std::endl;
+            std::cerr << "Near Tokens:" << *previous << " and " << *current << std::endl;   
+            return;
+        }
+    }
 
+    auto system_command = Command();
 
+    // Converts to the operating system interface
+    for (auto element : lexemes) {
+        switch (element->token) {
+            case SELECT:
+                system_command.command = COMMAND_TYPE::LIST;
+                break;
+            case NAME:
+                // name and size point to the same integer value
+                if ( element->value->compare("NAME") == 0 ) {
+                   // name
+                   system_command.columns.push_back(COLUMN_TYPE::FILENAME);
+                } else {
+                   // size 
+                   system_command.columns.push_back(COLUMN_TYPE::FILESIZE);
+                }
+                break;
+            case IDENTIFIER:
+                // target file/directory
+                system_command.target = *(element->value);
+                break;
+            case WHERE:
+                break;
+            case EQUAL:
+                break;
+            default:
+                // does nothing
+                break;
+            
+            // frees the memory
+            delete element;
+        }
+    }
+
+    auto result = System::execute(&system_command);
+    for ( auto element : *result ) {
+        std::cout << *element << std::endl;
+        delete element; 
+    }
+    delete result;
 
 }
