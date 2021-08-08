@@ -1,203 +1,167 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <streambuf>
 #include <string>
 #include <utility>
 #include <iostream>
 #include <vector>
+#include <iostream>
 
 #include "compiler.hpp"
-
-// if debug all flag is set
-#ifdef DEBUG 
-#   undef DEBUG_COMPILER
-#   define DEBUG_COMPILER 1
-#endif
-
-#ifdef DEBUG_COMPILER
-#   include <iostream>
-#endif
 
 namespace Termsequel {
     
     enum TOKEN_TYPE {
-        UNKNOWN,    // Invalid. Unreconized token
-        COMMA,      // Comma to separate columns 
-        SELECT,     // SQL SELECT KEYWORD
-        FROM,       // SQL FROM KEYWORD
-        WHERE,      // SQL WHERE KEYWORD
-        NAME,       // NAME column. 
-        SIZE,       // SIZE column.
-        IDENTIFIER, // An identifer. A directory name, file name for example
-        TOKEN_END   // There are no more token.
+        TYPE_COMMAND, // A SQL command, like SELECT
+        TYPE_COLUMN, // An available column 
+        TYPE_IDENTIFIER, // An identifier
+        TYPE_WHERE, // A restriction
+        TYPE_COMMA, // A comma
+        TYPE_FROM, // A target
+        TYPE_EQUAL, // equal
+        TYPE_END, // Represents the end of the input
     };
 
-    static constexpr const char * const TokenMap[] = {
-        "UNKNOWN",
-        "COMMA", 
-        "SELECT",
-        "FROM",
-        "WHERE",
-        "NAME",
-        "SIZE",
+    static constexpr const char * const TOKEN_MAP[] = {
+        "COMMAND",
+        "COLUMN",
         "IDENTIFIER",
-        "TOKEN_END"
+        "WHERE",
+        "COMMA",
+        "FROM", 
+        "EQUAL",
+        "END"
     };
 
-    static constexpr const char * get_token_type_name(TOKEN_TYPE token) {
-        return TokenMap[token];
-    }
+    enum Token {
+        SELECT = TYPE_COMMAND,
+        FROM = TYPE_FROM,
+        WHERE = TYPE_WHERE,
+        NAME = TYPE_COLUMN,
+        SIZE = TYPE_COLUMN,
+        IDENTIFIER = TYPE_IDENTIFIER,
+        EQUAL = TYPE_EQUAL,
+        END = TYPE_END,
+        COMMA = TYPE_COMMA,
+    };
 
-    class Token {
+    struct Lexeme {
 
-        private:
-            TOKEN_TYPE type;
-            std::string value;
-        public:
-            Token(
-                TOKEN_TYPE type,
-                std::string value
-            ) {
-                this->type = type;
-                this->value = value;
-            }
-            TOKEN_TYPE get_type() {
-                return this->type;
-            }
+        enum Token token;
+        std::string *value;
 
-            std::string get_value() {
-                return this->value;
-            }
+        Lexeme (
+            enum Token token,
+            const char *string,
+            std::uint32_t size
+        ) {
+            this->token = token;
+            value = new std::string(string, size);
+        }
 
-            bool is_terminal() {
-                // for now, just the identifier is terminal
-                return this->type == IDENTIFIER;
-            }        
+        ~Lexeme() {
+            delete value;
+        }
+
+        bool is_terminal() {
+            return token == Token::END; 
+        };
+
+        // TODO: Does not work without friend, and, I do not know why
+        friend std::ostream & operator << (std::ostream &output_stream, const Lexeme &lexeme) {
+            output_stream << " Token: " << TOKEN_MAP[lexeme.token];
+            output_stream << " Value: " << *(lexeme.value);
+            return output_stream;
+        }
+
     };
 
     class Lexical {
-
         private:
             std::string raw_input;
-            uint32_t current_index;
+            std::uint32_t current_index;
+
+            Lexeme * parse_lexeme (
+                const char * c_string,  /* The cstring to compare*/
+                std::uint32_t size      /* Number of characters to compare*/
+            ) {
+                // TODO: Refactor to use string::compare method
+                // https://www.cplusplus.com/reference/string/string/compare/
+                if (        std::strncmp(c_string, "SELECT", size ) == 0 ) {
+                    return new Lexeme ( SELECT, c_string, size );
+                } else if ( std::strncmp(c_string, "NAME",   size ) == 0 ) {
+                    return new Lexeme ( Token::NAME,   c_string, size );
+                } else if ( std::strncmp(c_string, "SIZE",   size ) == 0 ) {
+                    return new Lexeme ( Token::SIZE,   c_string, size );
+                } else if ( std::strncmp(c_string, "FROM",   size ) == 0 ) {
+                    return new Lexeme ( Token::FROM,   c_string, size );
+                } else if ( std::strncmp(c_string, "WHERE",  size ) == 0 ) {
+                    return new Lexeme ( Token::WHERE,  c_string, size );
+                } else if ( std::strncmp(c_string, "=",      size ) == 0 ) {
+                    return new Lexeme ( Token::EQUAL,  c_string, size );
+                } else if ( std::strncmp(c_string, ",",      size)  == 0 ) {
+                    return new Lexeme ( Token::COMMA,  c_string, size );
+                } else {
+                    // anything else, is an identifier
+                    return new Lexeme (Token::IDENTIFIER, c_string, size );
+                }
+
+            }
+
         public:
             Lexical(std::string raw_input) {
                 this->raw_input = raw_input;
                 current_index = 0;
-            }
+            };
+            
 
-            Token next_token() {
-                while(true) {
+            Lexeme * next() {
+
+                while (true) {
                     if ( current_index >= raw_input.size() || raw_input[current_index] != ' ' ) break;
                     current_index++;
                 }
-                if (current_index >= raw_input.size()) return Token(TOKEN_END, "");
+                // No moe things to parse, because, we already reached the end of the input 
+                if ( current_index >= raw_input.size() ) return new Lexeme (Token::END,  "End of input", strlen("End of input"));
                 auto tmp_index = raw_input.find(' ', current_index);
-                if (tmp_index == std::string::npos) {
-                    // Reached the end of the input
-                    std::string identifier = raw_input.substr(current_index);
-                    current_index = raw_input.size();
-                    return Token(IDENTIFIER, identifier);    
-                } else {
-                    // updates the current index
-                    const auto substring = raw_input.substr(current_index, tmp_index - current_index);
-                    if (substring[0] == ',') {
-                        // comma is the first character
-                        // something like
-                        // SELECT NAME ,SIZE ...
+                if ( tmp_index == std::string::npos ) {
+                    // Reached the end
+                    tmp_index = raw_input.size();
+                }
+                const auto token_string = raw_input.substr(current_index, tmp_index - current_index);
+                const auto comma_index = token_string.find(","); 
+                if ( comma_index != std::string::npos ) {
+                    // there are commas appended with another value
+    
+                    if (token_string[0] == ',') {
                         current_index++;
-                        return Token(COMMA, "");
-                    } else {
-                        const auto comma_index = substring.find(",");
-                        if (comma_index != std::string::npos) {
-                            // has comma, but, is not the first character
-                            tmp_index = current_index + comma_index;
-                        } 
+                        return parse_lexeme(token_string.c_str(), 1);
                     }
-                    const char *tmp_string = raw_input.c_str()+current_index;
-                    auto difference = tmp_index - current_index;
-                    current_index = tmp_index;
-                    if ( strncmp(tmp_string, "SELECT", difference) == 0 ) {
-                        return Token(SELECT, "");    
-                    } else if ( strncmp(tmp_string, "NAME", difference) == 0 ) {
-                        return Token(NAME, "");
-                    } else if ( strncmp(tmp_string, "SIZE", difference) == 0 ) {
-                        return Token(SIZE, "");
-                    } else if ( strncmp(tmp_string, "FROM", difference)  == 0) {
-                        return Token(FROM, "");
-                    } else {
-                        // unknown token
-                        return Token(UNKNOWN, "");
-                    }   
+
+                    // Now, tmp_index points to the first comma in the substring
+                    tmp_index = current_index + comma_index;
                 }
-            }
 
-            void reset() {
-                current_index = 0;
-            }
-    };
+                // Points to the first character of the new token
+                const char *tmp_string = raw_input.c_str()+current_index;
 
-    class Grammar {
-        private:
-            std::vector<TOKEN_TYPE> expectations;
-        private:
-        public:
-            Grammar(TOKEN_TYPE token){ 
-                expectations.push_back(token);
-            };
-            Grammar(TOKEN_TYPE token, TOKEN_TYPE token2){ 
-                expectations.push_back(token);
-                expectations.push_back(token2);
-            };
-            
-            bool match(TOKEN_TYPE type) {
-                return std::find((expectations).begin(), (expectations).end(), type) != (expectations).end();
+                // how many characters should be considered  
+                const auto difference = tmp_index - current_index;
+
+                // updates the index
+                current_index = tmp_index;
+
+                // returns a new lexeme
+                return parse_lexeme(tmp_string, difference);
             };
     };
 
-    class Syntax {
 
-        private:
-            std::vector<std::string> errors_list;
-            std::map<TOKEN_TYPE, Grammar> *grammars; 
-        public:
-            Syntax() {
-                grammars = new std::map<TOKEN_TYPE, Grammar>;
-                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(SELECT, Grammar(NAME, SIZE)));
-                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(COMMA, Grammar(NAME, SIZE)));
-                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(NAME, Grammar(COMMA, FROM)));
-                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(SIZE, Grammar(COMMA, FROM)));
-                grammars->insert(std::pair<TOKEN_TYPE, Grammar>(FROM, Grammar(IDENTIFIER)));
-            }
-            ~Syntax() {
-                delete grammars;
-            }
-            std::vector<std::string> get_errors() {
-                return this->errors_list;
-            }
-            bool analyse(Lexical &lexical) {
-                
-                auto previous = lexical.next_token();
-                auto token = lexical.next_token();
-                while (token.get_type() != TOKEN_END) {
-                    if (grammars->find(previous.get_type())->second.match(token.get_type())) {
-                        // OK, grammar is ok
-                        previous = token;
-                        token = lexical.next_token();
-                    } else {
-                        // invalid grammar
-                        std::ostringstream string_buffer;
-                        string_buffer << "Error! Invalid Token!";  
-                        string_buffer << "\tFrom the token: " << get_token_type_name(previous.get_type()) << ".";
-                        errors_list.push_back(string_buffer.str());
-                        break;
-                    }
-                }
-                return errors_list.size() == 0;                
-            }
     };
 };
 
@@ -207,50 +171,9 @@ Termsequel::Compiler::Compiler(std::string raw_input) {
 
 void Termsequel::Compiler::execute() {
 
-    Lexical lexical(this->raw_input);
-    Syntax syntax;
-    if (!syntax.analyse(lexical)) {
-        std::cerr << "Errors found!" <<std::endl;
-        for(auto element : syntax.get_errors()) {
-            std::cerr << element << std::endl;
-        }
-        return;
-    } 
 
-    // Sets to the first position.
-    lexical.reset();
 
-    // for now, just list is implemented
-    auto command_type = LIST;
 
-    // command
-    auto token = lexical.next_token();
 
-    std::vector<COLUMN_TYPE> columns; 
 
-    do {
-        token = lexical.next_token();
-        if (token.get_type() == NAME) {
-            columns.push_back(FILENAME);
-        } else if (token.get_type() == SIZE) {
-            columns.push_back(FILESIZE);
-        }
-    } while (token.get_type() != FROM);
-
-    // identifier token
-    token = lexical.next_token();
-    std::string target = token.get_value();
-
-    const auto command = new Command();
-    command->command = command_type;
-    command->columns = columns;
-    command->target = target;
-
-    const auto rows = System::execute(command); 
-    for (const auto element : *rows) {
-        std::cout << *element << std::endl;
-        delete element;
-    }
-    delete rows;
-    delete command;
 }
