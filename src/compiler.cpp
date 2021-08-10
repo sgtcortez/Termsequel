@@ -15,7 +15,13 @@
 #include "compiler.hpp"
 #include "system.hpp"
 
+#ifdef DEBUG
+    #define DEBUG_COMPILER 1
+#endif
 
+#ifdef DEBUG_COMPILER
+    #include <iostream>
+#endif
 
 namespace Termsequel {
 
@@ -211,7 +217,9 @@ void Termsequel::Compiler::execute() {
 
    while (true) {
       const auto lexeme = lex.next();
-      std::cout << *lexeme << std::endl;
+      #ifdef DEBUG_COMPILER
+         std::cout << *lexeme << std::endl;
+      #endif
       lexemes.push_back(lexeme);
       if ((*lexeme).token == END) break;
    }
@@ -226,7 +234,7 @@ void Termsequel::Compiler::execute() {
       }
    }
 
-    auto system_command = Command();
+   auto system_command = Command();
 
    // Converts to the operating system interface
    for (auto element : lexemes) {

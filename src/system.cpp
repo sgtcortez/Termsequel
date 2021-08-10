@@ -12,6 +12,15 @@
 
 #include "system.hpp"
 
+#ifdef DEBUG
+    #define DEBUG_SYSTEM 1
+#endif
+
+#ifdef DEBUG_SYSTEM
+    #include <iostream>
+#endif
+
+
 // Stores the members that are useful to store
 // from stat result
 struct StatResult {
@@ -108,6 +117,9 @@ static std::vector<struct StatResult *> * get_information(std::string filename) 
       // error
       // Could not stat
       // returns empty vector
+      #ifdef DEBUG_SYSTEM
+         std::cerr << "Could not stat the file: " << filename << std::endl;
+      #endif
       return new std::vector<struct StatResult *>;
    }
 
