@@ -9,7 +9,8 @@
 - [Developers](#Developers)
 
 # Termsequel
-Bringing SQL to our filesystem.
+Bringing SQL to our filesystem.      
+![Termsequel](./.assets/Termsequel-logo.png)
 
 - ## What is
 
