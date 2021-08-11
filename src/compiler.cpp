@@ -66,11 +66,10 @@ namespace Termsequel {
 
       Lexeme (
          enum Token token,
-         const char *string,
-         std::uint32_t size
+         std::string string
       ) {
          this->token = token;
-         value = new std::string(string, size);
+         value = new std::string(string);
       }
 
       ~Lexeme() {
@@ -95,31 +94,25 @@ namespace Termsequel {
          std::string raw_input;
          std::uint32_t current_index;
 
-         Lexeme * parse_lexeme (
-               const char * c_string,  /* The cstring to compare*/
-               std::uint32_t size      /* Number of characters to compare*/
-         ) {
-            // TODO: Refactor to use string::compare method
-            // https://www.cplusplus.com/reference/string/string/compare/
-            if (        std::strncmp(c_string, "SELECT", size ) == 0 ) {
-               return new Lexeme ( SELECT, c_string, size );
-            } else if ( std::strncmp(c_string, "NAME",   size ) == 0 ) {
-               return new Lexeme ( Token::NAME,   c_string, size );
-            } else if ( std::strncmp(c_string, "SIZE",   size ) == 0 ) {
-               return new Lexeme ( Token::SIZE,   c_string, size );
-            } else if ( std::strncmp(c_string, "FROM",   size ) == 0 ) {
-               return new Lexeme ( Token::FROM,   c_string, size );
-            } else if ( std::strncmp(c_string, "WHERE",  size ) == 0 ) {
-               return new Lexeme ( Token::WHERE,  c_string, size );
-            } else if ( std::strncmp(c_string, "=",      size ) == 0 ) {
-               return new Lexeme ( Token::EQUAL,  c_string, size );
-            } else if ( std::strncmp(c_string, ",",      size)  == 0 ) {
-               return new Lexeme ( Token::COMMA,  c_string, size );
+         Lexeme * parse_lexeme (const std::string string) {
+            if (string.compare("SELECT") == 0 ) {
+               return new Lexeme( Token::SELECT, string );
+            } else if ( string.compare("NAME") == 0 ) {
+               return new Lexeme( Token::NAME, string);
+            } else if ( string.compare("SIZE") == 0 ) {
+               return new Lexeme ( Token::SIZE, string );
+            } else if ( string.compare("FROM") == 0 ) {
+               return new Lexeme ( Token::FROM, string );
+            } else if ( string.compare("WHERE") == 0 ) {
+               return new Lexeme (Token::WHERE, string);
+            } else if ( string.compare("=") == 0 ) {
+               return new Lexeme (Token::EQUAL, string);
+            } else if ( string.compare(",") == 0 ) {
+               return new Lexeme ( Token::COMMA, string );
             } else {
-               // anything else, is an identifier
-               return new Lexeme (Token::IDENTIFIER, c_string, size );
+               // anything else is an identifier
+               return new Lexeme(Token::IDENTIFIER, string);
             }
-
          }
 
       public:
@@ -134,38 +127,34 @@ namespace Termsequel {
                if ( current_index >= raw_input.size() || raw_input[current_index] != ' ' ) break;
                current_index++;
             }
-            // No moe things to parse, because, we already reached the end of the input
-            if ( current_index >= raw_input.size() ) return new Lexeme (Token::END,  "End of input", strlen("End of input"));
+            // No more things to parse, because, we already reached the end of the input
+            if ( current_index >= raw_input.size() ) return new Lexeme (Token::END,  "End of input");
             auto tmp_index = raw_input.find(' ', current_index);
             if ( tmp_index == std::string::npos ) {
                // Reached the end
                tmp_index = raw_input.size();
             }
-            const auto token_string = raw_input.substr(current_index, tmp_index - current_index);
+            auto token_string = raw_input.substr(current_index, tmp_index - current_index);
             const auto comma_index = token_string.find(",");
             if ( comma_index != std::string::npos ) {
                // there are commas appended with another value
 
                if (token_string[0] == ',') {
+                  // The first character is a comma, so, parse the comma
+                  // and points to the next character
                   current_index++;
-                  return parse_lexeme(token_string.c_str(), 1);
+                  return parse_lexeme(",");
                }
-
+               token_string = token_string.substr(0, comma_index) ;
                // Now, tmp_index points to the first comma in the substring
                tmp_index = current_index + comma_index;
             }
-
-            // Points to the first character of the new token
-            const char *tmp_string = raw_input.c_str()+current_index;
-
-            // how many characters should be considered
-            const auto difference = tmp_index - current_index;
 
             // updates the index
             current_index = tmp_index;
 
             // returns a new lexeme
-            return parse_lexeme(tmp_string, difference);
+            return parse_lexeme(token_string);
          };
     };
 
