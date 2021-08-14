@@ -96,6 +96,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
             Returns the size in bytes of the file.   
             Size of an directory may not be correct. Because, to get the real size, we need to retrive all the files/subdirectories, and calculate all of them.
 
+        + OWNER 
+
+            Returns the owner of the file.  
+
     - ### SELECT
 
         The same syntax as a SQL database.    

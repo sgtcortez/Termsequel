@@ -69,6 +69,7 @@ namespace Termsequel {
          static const Token COMMA;
          static const Token END;
          static const Token EQUAL;
+         static const Token OWNER;
 
          bool is_end() const {
             return type == TokenType::TYPE_END;
@@ -114,12 +115,14 @@ namespace Termsequel {
    Token const Token::SELECT     = (TokenType::TYPE_COMMAND);
    Token const Token::NAME       = (TokenType::TYPE_COLUMN);
    Token const Token::SIZE       = (TokenType::TYPE_COLUMN);
+   Token const Token::OWNER      = (TokenType::TYPE_COLUMN);
    Token const Token::FROM       = (TokenType::TYPE_FROM);
    Token const Token::IDENTIFIER = (TokenType::TYPE_IDENTIFIER);
    Token const Token::WHERE      = (TokenType::TYPE_WHERE);
    Token const Token::COMMA      = (TokenType::TYPE_COMMA);
    Token const Token::END        = (TokenType::TYPE_END);
    Token const Token::EQUAL      = (TokenType::TYPE_COMPARASION);
+
 
    struct Lexeme {
 
@@ -179,6 +182,8 @@ namespace Termsequel {
                return new Lexeme (Token::EQUAL);
             } else if ( string.compare(",") == 0 ) {
                return new Lexeme ( Token::COMMA );
+            } else if ( string.compare("OWNER") == 0 ) {
+               return new Lexeme ( Token::OWNER);
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -274,6 +279,8 @@ void Termsequel::Compiler::execute() {
             system_command.columns.push_back(COLUMN_TYPE::FILENAME);
          } else if ( Token::SIZE == *(token) ) {
             system_command.columns.push_back((COLUMN_TYPE::FILESIZE));
+         } else if ( Token::OWNER == *(token) ) {
+            system_command.columns.push_back(COLUMN_TYPE::OWNER);
          } else if ( Token::IDENTIFIER == *(token) ) {
             system_command.target = *(lexeme->value);
          }
