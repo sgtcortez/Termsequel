@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <string>
 #include <sys/stat.h>
@@ -24,14 +25,25 @@
 // Stores the members that are useful to store
 // from stat result
 struct StatResult {
-    std::uint64_t size;
-    // does not return from stat
-    std::string filename;
+   // filesize in bytes
+   std::uint64_t size;
+
+   // The file owner
+   std::string owner;
+
+   // does not return from stat
+   std::string filename;
+
 };
 
 // Returns the information about a directory and all its subdirectories/files
 static std::vector<struct StatResult *> * get_directory_information(std::string name);
 static std::vector<struct StatResult *> * get_information(std::string name);
+
+/**
+ * Returns the owner(login) of the file
+*/
+static std::string get_owner_name(uid_t owner);
 
 
 std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *command) {
@@ -44,6 +56,7 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
    // Starts with the default column name
    std::size_t bigger_filename = strlen("Filename");
    std::size_t bigger_column = strlen("Size");
+   std::size_t bigger_owner = strlen("Owner");
 
    for (const auto stat_element : *stat_array ) {
       for (const auto column: command->columns) {
@@ -57,6 +70,11 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
                if (number_string.size() > bigger_column) {
                   bigger_column = number_string.size();
                }
+         }
+         if ( column == COLUMN_TYPE::OWNER ) {
+            if ( stat_element->owner.size() > bigger_owner ) {
+               bigger_owner = stat_element->owner.size();
+            }
          }
       }
    }
@@ -77,6 +95,10 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
          header->append(" Size");
          header->insert(header->end(), bigger_column - strlen("Size"), ' ');
       }
+      if ( column == COLUMN_TYPE::OWNER ) {
+         header->append(" Owner");
+         header->insert(header->end(), bigger_owner - strlen("Owner"), ' ');
+      }
    }
    rows->push_back(header);
 
@@ -96,6 +118,11 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
                string->push_back(' ');
                string->append(column_value);
                string->insert(string->end(), bigger_column - column_value.size() , ' ');
+         }
+         if ( column == COLUMN_TYPE::OWNER ) {
+            string->push_back(' ');
+            string->append(stat_element->owner);
+            string->insert(string->end(), bigger_owner - stat_element->owner.size(), ' ');
          }
       }
       rows->push_back(string);
@@ -134,6 +161,7 @@ static std::vector<struct StatResult *> * get_information(std::string filename) 
       auto stat_value = new struct StatResult;
       stat_value->filename = filename;
       stat_value->size = stat_buffer.st_size;
+      stat_value->owner = get_owner_name(stat_buffer.st_uid);
       auto vector = new std::vector<struct StatResult *>;
       vector->push_back(stat_value);
       return vector;
@@ -171,4 +199,26 @@ static std::vector<struct StatResult *> * get_directory_information(std::string 
    }
    closedir(directory);
    return vector;
+}
+
+static std::string get_owner_name(uid_t owner) {
+   constexpr std::uint32_t buffer_size = 30;
+   char buffer[buffer_size];
+   std::string output;
+
+   std::snprintf(buffer, buffer_size, "id --name --user %d", owner);
+
+   FILE *file = popen(buffer, "r");
+   if (file) {
+      output.reserve(buffer_size);
+      std::fread(buffer, sizeof(buffer), buffer_size - 1, file);
+      output.append(buffer);
+
+      // id returns a new line. We must remove it.
+      output.erase(output.find_first_of("\n"));
+      pclose(file);
+      return output;
+   }
+   output.append("Could not get owner ...");
+   return output;
 }

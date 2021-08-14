@@ -17,7 +17,8 @@ namespace Termsequel {
 
    enum class COLUMN_TYPE {
       FILENAME, // name of the file
-      FILESIZE // size of the file
+      FILESIZE, // size of the file,
+      OWNER,    // owner of the file
    };
 
    // Represents an execution command
