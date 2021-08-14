@@ -204,6 +204,8 @@ void Termsequel::Compiler::execute() {
    Lexical lex(this->raw_input);
    std::vector<Lexeme*> lexemes;
 
+   bool has_errors = false;
+
    while (true) {
       const auto lexeme = lex.next();
       #ifdef DEBUG_COMPILER
@@ -219,50 +221,57 @@ void Termsequel::Compiler::execute() {
       if (!(match(previous->token, current->token))) {
          std::cerr << "Invalid SYNTAX!" << std::endl;
          std::cerr << "Near Tokens:" << *previous << " and " << *current << std::endl;
-         return;
+         has_errors = true;
+         break;
       }
    }
+   if (!(has_errors)) {
 
-   auto system_command = Command();
+      auto system_command = Command();
 
-   // Converts to the operating system interface
-   for (auto element : lexemes) {
-      switch (element->token) {
-         case SELECT:
-               system_command.command = COMMAND_TYPE::LIST;
-               break;
-         case NAME:
-               // name and size point to the same integer value
-               if ( element->value->compare("NAME") == 0 ) {
-                  // name
-                  system_command.columns.push_back(COLUMN_TYPE::FILENAME);
-               } else {
-                  // size
-                  system_command.columns.push_back(COLUMN_TYPE::FILESIZE);
-               }
-               break;
-         case IDENTIFIER:
-               // target file/directory
-               system_command.target = *(element->value);
-               break;
-         case WHERE:
-               break;
-         case EQUAL:
-               break;
-         default:
-               // does nothing
-               break;
+      // Converts to the operating system interface
+      for (auto element : lexemes) {
+         switch (element->token) {
+            case SELECT:
+                  system_command.command = COMMAND_TYPE::LIST;
+                  break;
+            case NAME:
+                  // name and size point to the same integer value
+                  if ( element->value->compare("NAME") == 0 ) {
+                     // name
+                     system_command.columns.push_back(COLUMN_TYPE::FILENAME);
+                  } else {
+                     // size
+                     system_command.columns.push_back(COLUMN_TYPE::FILESIZE);
+                  }
+                  break;
+            case IDENTIFIER:
+                  // target file/directory
+                  system_command.target = *(element->value);
+                  break;
+            case WHERE:
+                  break;
+            case EQUAL:
+                  break;
+            default:
+                  // does nothing
+                  break;
 
-         // frees the memory
+            // frees the memory
+            delete element;
+         }
+      }
+      auto result = System::execute(&system_command);
+      for ( auto element : *result ) {
+         std::cout << *element << std::endl;
          delete element;
       }
+      delete result;
    }
 
-   auto result = System::execute(&system_command);
-   for ( auto element : *result ) {
-      std::cout << *element << std::endl;
-      delete element;
-   }
-   delete result;
+   // delete the lexemes ...
+   for(auto lexeme : lexemes) delete lexeme;
+
+
 
 }
