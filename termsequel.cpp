@@ -66,6 +66,7 @@ void show_help(
         "\n SIZE Filesize"
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
-        "\nVersion: %s.\n";
-    fprintf(stream, message.c_str(), filename, VERSION);
+        "\nVersion: %s."
+        "\nCompiled at: %s:%s\n";
+    fprintf(stream, message.c_str(), filename, VERSION, __DATE__, __TIME__);
 }
