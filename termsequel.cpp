@@ -7,7 +7,7 @@
 
 #include "include/compiler.hpp"
 
-static constexpr const char *short_options = "f:h";
+static constexpr const char *short_options = "h";
 static constexpr const char *VERSION = "0.1";
 
 using namespace Termsequel;
@@ -28,9 +28,6 @@ int main (
     while ( (option = getopt(argc, argv, short_options)) != -1 ) {
 
         switch (option) {
-            case 'f':
-                // TODO
-                break;
             case 'h':
                 // show help and exits
                 show_help(binary_name, stdout);
@@ -57,13 +54,13 @@ void show_help(
     FILE *stream
 ) {
     std::string message =
-        "Usage: %s [-h] [-f] SQL"
+        "Usage: %s [-h] SQL"
         "\nOptions:"
         "\n -h Show this help."
-        "\n -f Read from file, instead of stdin."
         "\nColumns available:"
-        "\n NAME Filename"
-        "\n SIZE Filesize"
+        "\n NAME  Filename"
+        "\n SIZE  Filesize"
+        "\n OWNER File owner"
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
         "\nVersion: %s."
