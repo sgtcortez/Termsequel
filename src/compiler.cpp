@@ -71,9 +71,17 @@ namespace Termsequel {
          static const Token COMMA;
          static const Token END;
          static const Token EQUAL;
+         static const Token STARTS_WITH;
+         static const Token ENDS_WITH;
+         static const Token CONTAINS;
+         static const Token BIGGER;
+         static const Token LESS;
+         static const Token BIGGER_OR_EQUAL;
+         static const Token LESS_OR_EQUAL;
          static const Token OWNER;
          static const Token AND;
          static const Token OR;
+
 
          bool is_end() const {
             return type == TokenType::TYPE_END;
@@ -118,18 +126,25 @@ namespace Termsequel {
 
    // initializes the static instances.
    // There are no need to free this ...
-   Token const Token::SELECT     = (TokenType::TYPE_COMMAND);
-   Token const Token::NAME       = (TokenType::TYPE_COLUMN);
-   Token const Token::SIZE       = (TokenType::TYPE_COLUMN);
-   Token const Token::OWNER      = (TokenType::TYPE_COLUMN);
-   Token const Token::FROM       = (TokenType::TYPE_FROM);
-   Token const Token::IDENTIFIER = (TokenType::TYPE_IDENTIFIER);
-   Token const Token::WHERE      = (TokenType::TYPE_WHERE);
-   Token const Token::COMMA      = (TokenType::TYPE_COMMA);
-   Token const Token::END        = (TokenType::TYPE_END);
-   Token const Token::EQUAL      = (TokenType::TYPE_COMPARASION);
-   Token const Token::AND        = (TokenType::TYPE_LOGICAL);
-   Token const Token::OR         = (TokenType::TYPE_LOGICAL);
+   Token const Token::SELECT          = (TokenType::TYPE_COMMAND);
+   Token const Token::NAME            = (TokenType::TYPE_COLUMN);
+   Token const Token::SIZE            = (TokenType::TYPE_COLUMN);
+   Token const Token::OWNER           = (TokenType::TYPE_COLUMN);
+   Token const Token::FROM            = (TokenType::TYPE_FROM);
+   Token const Token::IDENTIFIER      = (TokenType::TYPE_IDENTIFIER);
+   Token const Token::WHERE           = (TokenType::TYPE_WHERE);
+   Token const Token::COMMA           = (TokenType::TYPE_COMMA);
+   Token const Token::END             = (TokenType::TYPE_END);
+   Token const Token::EQUAL           = (TokenType::TYPE_COMPARASION);
+   Token const Token::STARTS_WITH     = (TokenType::TYPE_COMPARASION);
+   Token const Token::ENDS_WITH       = (TokenType::TYPE_COMPARASION);
+   Token const Token::BIGGER          = (TokenType::TYPE_COMPARASION);
+   Token const Token::LESS            = (TokenType::TYPE_COMPARASION);
+   Token const Token::BIGGER_OR_EQUAL = (TokenType::TYPE_COMPARASION);
+   Token const Token::LESS_OR_EQUAL   = (TokenType::TYPE_COMPARASION);
+   Token const Token::CONTAINS        = (TokenType::TYPE_COMPARASION);
+   Token const Token::AND             = (TokenType::TYPE_LOGICAL);
+   Token const Token::OR              = (TokenType::TYPE_LOGICAL);
 
    struct Lexeme {
 
@@ -195,6 +210,20 @@ namespace Termsequel {
                return new Lexeme (Token::AND);
             } else if ( string.compare("OR") == 0 ) {
                return new Lexeme ( Token::OR );
+            } else if ( string.compare("STARTS_WITH") == 0 ) {
+               return new Lexeme (Token::STARTS_WITH);
+            } else if ( string.compare("ENDS_WITH") == 0 ) {
+               return new Lexeme( Token::ENDS_WITH);
+            } else if ( string.compare("CONTAINS") == 0 ) {
+               return new Lexeme (Token::CONTAINS);
+            } else if ( string.compare(">") == 0) {
+               return new Lexeme (Token::BIGGER);
+            } else if ( string.compare("<") == 0 ) {
+               return new Lexeme (Token::LESS);
+            } else if ( string.compare(">=") == 0 ) {
+               return new Lexeme (Token::BIGGER_OR_EQUAL);
+            } else if ( string.compare("<=") == 0 ) {
+               return new Lexeme (Token::LESS_OR_EQUAL);
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -320,6 +349,20 @@ void Termsequel::Compiler::execute() {
                current_condition->column = COLUMN_TYPE::OWNER;
             } else if ( Token::EQUAL == *(token) ) {
                current_condition->operator_value = Operator::EQUAL;
+            } else if ( Token::STARTS_WITH == *(token)) {
+               current_condition->operator_value = Operator::STARTS_WITH;
+            } else if ( Token::ENDS_WITH == *(token) ) {
+               current_condition->operator_value = Operator::ENDS_WITH;
+            } else if (Token::CONTAINS == *(token)) {
+               current_condition->operator_value = Operator::CONTAINS;
+            } else if (Token::BIGGER == *(token)) {
+               current_condition->operator_value = Operator::BIGGER;
+            } else if (Token::LESS == *(token)) {
+               current_condition->operator_value = Operator::LESS;
+            } else if (Token::BIGGER_OR_EQUAL == *(token)) {
+               current_condition->operator_value = Operator::BIGGER_OR_EQUAL;
+            } else if (Token::LESS_OR_EQUAL == *(token)) {
+               current_condition->operator_value = Operator::LESS_OR_EQUAL;
             } else if ( Token::IDENTIFIER == *(token) ) {
                current_condition->value = *(lexeme->value);
                // puts the condition inside the vector
