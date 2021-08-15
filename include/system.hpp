@@ -21,11 +21,44 @@ namespace Termsequel {
       OWNER,    // owner of the file
    };
 
+   enum class LogicalOperator {
+      AND, // LEFT AND RIGHT MUST BE TRUE
+      OR   // LEFT OR RIGHT OR BOTH MUST BE TRUE
+   };
+
+   enum class Operator {
+      EQUAL,
+   };
+
+   struct Condition {
+      COLUMN_TYPE column;            // The column to apply the condition
+      enum Operator operator_value;  // The operator to compare
+      std::string value;             // The value to be compared
+   };
+
+   struct ConditionList {
+      std::vector<Condition*> conditions;
+      std::vector<LogicalOperator> operators;
+
+      ~ConditionList() {
+         for(const auto element : conditions) {
+            delete element;
+         }
+      }
+
+   };
+
+
    // Represents an execution command
    struct Command {
-      COMMAND_TYPE command; // the command to be executed
-      std::vector<COLUMN_TYPE> columns; // the columns
-      std::string target; // the target file/directory
+      COMMAND_TYPE command;             // the command to be executed
+      std::vector<COLUMN_TYPE> columns; // the columns to be retrieved
+      std::string target;               // the target file/directory
+      struct ConditionList *conditions; // The conditions that must be satisfied
+
+      ~Command() {
+         delete conditions;
+      }
    };
 
    class System {
