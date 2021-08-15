@@ -34,6 +34,7 @@ namespace Termsequel {
       TYPE_FROM, // A target
       TYPE_END, // Represents the end of the input
       TYPE_COMPARASION, // Represents a comparasion
+      TYPE_LOGICAL, // Logical Operators, like AND and OR
    };
 
    static constexpr const char * const TOKEN_MAP[] = {
@@ -44,7 +45,8 @@ namespace Termsequel {
       "COMMA",
       "FROM",
       "END",
-      "COMPARASION"
+      "COMPARASION",
+      "LOGICAL"
    };
 
    static constexpr char WHITE_SPACE = ' ';
@@ -70,6 +72,8 @@ namespace Termsequel {
          static const Token END;
          static const Token EQUAL;
          static const Token OWNER;
+         static const Token AND;
+         static const Token OR;
 
          bool is_end() const {
             return type == TokenType::TYPE_END;
@@ -90,7 +94,9 @@ namespace Termsequel {
                case TokenType::TYPE_COMPARASION:
                   return ( next.type == TokenType::TYPE_IDENTIFIER );
                case TokenType::TYPE_IDENTIFIER:
-                  return ( next.type == TokenType::TYPE_WHERE || next.type == TokenType::TYPE_END );
+                  return ( next.type == TokenType::TYPE_WHERE || next.type == TokenType::TYPE_END || next.type == TYPE_LOGICAL );
+               case TokenType::TYPE_LOGICAL:
+                  return ( next.type == TYPE_COLUMN );
                default:
                   // Must not enter here, otherwise, there is a problem with the compiler
                   return false;
@@ -122,7 +128,8 @@ namespace Termsequel {
    Token const Token::COMMA      = (TokenType::TYPE_COMMA);
    Token const Token::END        = (TokenType::TYPE_END);
    Token const Token::EQUAL      = (TokenType::TYPE_COMPARASION);
-
+   Token const Token::AND        = (TokenType::TYPE_LOGICAL);
+   Token const Token::OR         = (TokenType::TYPE_LOGICAL);
 
    struct Lexeme {
 
@@ -184,6 +191,10 @@ namespace Termsequel {
                return new Lexeme ( Token::COMMA );
             } else if ( string.compare("OWNER") == 0 ) {
                return new Lexeme ( Token::OWNER);
+            } else if ( string.compare("AND") == 0 ) {
+               return new Lexeme (Token::AND);
+            } else if ( string.compare("OR") == 0 ) {
+               return new Lexeme ( Token::OR );
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -269,21 +280,61 @@ void Termsequel::Compiler::execute() {
    if (!(has_errors)) {
 
       auto system_command = Command();
+      bool has_conditions = false;
+
+      struct Condition *current_condition;
 
       for (const auto lexeme: lexemes) {
 
          const auto token = (lexeme)->token;
-         if (Token::SELECT == *(token)) {
-            system_command.command = COMMAND_TYPE::LIST;
-         } else if ( Token::NAME == *(token) ) {
-            system_command.columns.push_back(COLUMN_TYPE::FILENAME);
-         } else if ( Token::SIZE == *(token) ) {
-            system_command.columns.push_back((COLUMN_TYPE::FILESIZE));
-         } else if ( Token::OWNER == *(token) ) {
-            system_command.columns.push_back(COLUMN_TYPE::OWNER);
-         } else if ( Token::IDENTIFIER == *(token) ) {
-            system_command.target = *(lexeme->value);
+
+
+         if (!has_conditions) {
+            // BEFORE WHERE
+            if (Token::SELECT == *(token)) {
+               system_command.command = COMMAND_TYPE::LIST;
+            } else if ( Token::NAME == *(token) ) {
+               system_command.columns.push_back(COLUMN_TYPE::FILENAME);
+            } else if ( Token::SIZE == *(token) ) {
+               system_command.columns.push_back((COLUMN_TYPE::FILESIZE));
+            } else if ( Token::OWNER == *(token) ) {
+               system_command.columns.push_back(COLUMN_TYPE::OWNER);
+            } else if ( Token::IDENTIFIER == *(token) ) {
+               system_command.target = *(lexeme->value);
+            } else if ( Token::WHERE == *(token) ) {
+               has_conditions = true;
+               // initializes the conditions
+               system_command.conditions = new struct ConditionList;
+            }
+         } else {
+            // AFTER WHERE
+            // where syntax COLUMN OPERATOR VALUE [LOGICAL_OPERATOR] ...
+            if ( Token::NAME == *(token) ) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::FILENAME;
+            } else if ( Token::SIZE == *(token) ) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::FILESIZE;
+            } else if ( Token::OWNER == *(token) ) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::OWNER;
+            } else if ( Token::EQUAL == *(token) ) {
+               current_condition->operator_value = Operator::EQUAL;
+            } else if ( Token::IDENTIFIER == *(token) ) {
+               current_condition->value = *(lexeme->value);
+               // puts the condition inside the vector
+               system_command.conditions->conditions.push_back(current_condition);
+
+               // points to null now
+               current_condition = nullptr;
+            } else if ( Token::AND == *(token) ) {
+               system_command.conditions->operators.push_back(LogicalOperator::AND);
+            } else if ( Token::OR == *(token) ) {
+               system_command.conditions->operators.push_back(LogicalOperator::OR);
+            }
+
          }
+
       }
 
       const auto result_rows = System::execute(&system_command);

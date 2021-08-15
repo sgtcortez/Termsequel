@@ -12,6 +12,7 @@
     + [Features](#Features)
         + [Columns](#Columns)
         + [SELECT](#SELECT)
+        + [WHERE](#WHERE)
 - [Developers](#Developers)
 
 # Termsequel
@@ -117,6 +118,21 @@ $ termsequel 'SELECT NAME FROM /HOME'
         ```sql
         SELECT NAME FROM /home/user/documents
         ```
+
+    - ### WHERE
+
+        Now, **Termsequel** supports **WHERE** filters!   
+        You can write filters like:   
+        ```sql
+        SELECT NAME FROM . WHERE OWNER = myuser
+        ```
+        Even, you can group logical operators(for now, they are just left precedence!)  
+        ```sql
+        SELECT NAME FROM . WHERE OWNER = myuser AND SIZE > 10
+        ```
+
+        The logical operators are: **AND** and **OR**.    
+
 
 # Developers
 There are sections for developers to be able to join this project.

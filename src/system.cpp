@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <sys/stat.h>
@@ -36,9 +37,20 @@ struct StatResult {
 
 };
 
+union Comparasion {
+   std::uint64_t integer_value;
+   const char *string_value;
+};
+
 // Returns the information about a directory and all its subdirectories/files
 static std::vector<struct StatResult *> * get_directory_information(std::string name);
 static std::vector<struct StatResult *> * get_information(std::string name);
+
+// Checks if the value should return to the user
+static bool should_return(
+   struct StatResult *row,
+   struct Termsequel::ConditionList *condition_list
+);
 
 /**
  * Returns the owner(login) of the file
@@ -48,8 +60,19 @@ static std::string get_owner_name(uid_t owner);
 
 std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *command) {
 
-   // convert the raw input from stat to a beautiful input, considering user column order
+   // FIXME. This is not good, and needs a good refactor
    const auto stat_array = get_information(command->target);
+   for (auto iterator = stat_array->begin(); iterator != stat_array->end();) {
+      if (!(should_return(*iterator, command->conditions))) {
+         delete *iterator;
+         iterator = stat_array->erase(iterator);
+      } else {
+         iterator++;
+      }
+   }
+
+
+   // convert the raw input from stat to a beautiful input, considering user column order
    const auto rows = new std::vector<std::string *>;
 
    // output rule. Values must be padded
@@ -133,19 +156,18 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
 };
 
 
-static std::vector<struct StatResult *> * get_information(std::string filename) {
-
+static std::vector<struct StatResult *> * get_information(std::string name){
     // check if file is directory, if so, iterate over directory(might go recursively)
     // otherwise, just return information about the specific file
 
    struct stat stat_buffer;
 
-   if ( stat(filename.c_str(), &stat_buffer ) != 0 ) {
+   if ( stat(name.c_str(), &stat_buffer ) != 0 ) {
       // error
       // Could not stat
       // returns empty vector
       #ifdef DEBUG_SYSTEM
-         std::cerr << "Could not stat the file: " << filename << std::endl;
+         std::cerr << "Could not stat the file: " << name << std::endl;
       #endif
       return new std::vector<struct StatResult *>;
    }
@@ -153,13 +175,13 @@ static std::vector<struct StatResult *> * get_information(std::string filename) 
 
    if ( stat_buffer.st_mode & S_IFDIR ) {
       // directory
-      return get_directory_information(filename);
+      return get_directory_information(name);
    } else if ( stat_buffer.st_mode & S_IFREG ) {
       // Regular file
 
       // Store the stat result in the heap
       auto stat_value = new struct StatResult;
-      stat_value->filename = filename;
+      stat_value->filename = name;
       stat_value->size = stat_buffer.st_size;
       stat_value->owner = get_owner_name(stat_buffer.st_uid);
       auto vector = new std::vector<struct StatResult *>;
@@ -221,4 +243,70 @@ static std::string get_owner_name(uid_t owner) {
    }
    output.append("Could not get owner ...");
    return output;
+}
+
+static bool should_return(
+   struct StatResult *row,
+   struct Termsequel::ConditionList *condition_list
+) {
+
+   bool ok = true;
+   if (condition_list) {
+
+      // stores the result of the comparasions
+      std::vector<bool> comparasion;
+
+
+      // There is a need to use c style loops, because we need to get the logical
+      // operator based on the current index
+      for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
+         bool current;
+         const auto condition = condition_list->conditions[index];
+         union Comparasion compare_value;
+         bool compare_string = true;
+         switch (condition->column) {
+            case Termsequel::COLUMN_TYPE::FILENAME:
+               // Ignore the absolute path, and gets just the filename.
+               compare_value.string_value = row->filename.substr(row->filename.find_last_of("/") + 1).c_str();
+               break;
+            case Termsequel::COLUMN_TYPE::FILESIZE:
+               compare_value.integer_value = row->size;
+               compare_string = false;
+               break;
+            case Termsequel::COLUMN_TYPE::OWNER:
+               compare_value.string_value = row->owner.c_str();
+               break;
+         }
+
+         switch (condition->operator_value) {
+            case Termsequel::Operator::EQUAL:
+               if (!compare_string) {
+                  // compare integer
+                  std::uint64_t condition_value = std::atol(condition->value.c_str());
+                  current = compare_value.integer_value == condition_value;
+               } else {
+                  // compare string
+                  current = std::strncmp(compare_value.string_value, condition->value.c_str(), condition->value.size()) == 0;
+               }
+               break;
+         }
+         comparasion.push_back(current);
+      }
+
+      // just one comparasion, this means that there are no logical operators
+      if (comparasion.size() == 1) return comparasion[0];
+
+      // compares the results and yelds the boolean result
+      for (auto index = 1UL; index < condition_list->conditions.size(); index++) {
+
+         bool left = comparasion[index - 1];
+         bool right = comparasion[index];
+         ok = (left && right) || ( condition_list->operators[index - 1] == Termsequel::LogicalOperator::OR && (left || right));
+         if (!ok) break;
+      }
+   }
+
+
+   // returns the conditions value
+   return ok;
 }
