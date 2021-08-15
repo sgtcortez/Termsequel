@@ -28,6 +28,13 @@ namespace Termsequel {
 
    enum class Operator {
       EQUAL,
+      STARTS_WITH,
+      ENDS_WITH,
+      CONTAINS,
+      BIGGER,
+      LESS,
+      BIGGER_OR_EQUAL,
+      LESS_OR_EQUAL,
    };
 
    struct Condition {

@@ -289,6 +289,78 @@ static bool should_return(
                   current = std::strncmp(compare_value.string_value, condition->value.c_str(), condition->value.size()) == 0;
                }
                break;
+            case Termsequel::Operator::STARTS_WITH:
+               if(compare_string) {
+                  if ( condition->value.size() > strlen(compare_value.string_value) ) {
+                     current = false;
+                  } else {
+                     current = std::strncmp(compare_value.string_value, condition->value.c_str(), condition->value.size()) == 0;
+                  }
+               } else {
+                  // tries to compare integer with starts with
+                  // should throw invalid syntax, but, this will not be so easy
+                  current = false;
+               }
+               break;
+            case Termsequel::Operator::ENDS_WITH:
+               if(compare_string) {
+                  if ( condition->value.size() > strlen(compare_value.string_value) ) {
+                     current = false;
+                  } else {
+                     std::string tmp = compare_value.string_value;
+                     current = tmp.compare(tmp.size() - condition->value.size(), condition->value.size(), condition->value) == 0;
+                  }
+               } else {
+                  // tries to compare integer with starts with
+                  // should throw invalid syntax, but, this will not be so easy to do
+                  current = false;
+               }
+               break;
+            case Termsequel::Operator::CONTAINS:
+               if(compare_string) {
+                  if ( condition->value.size() > strlen(compare_value.string_value) ) {
+                     current = false;
+                  } else {
+                     current = std::strstr(compare_value.string_value, condition->value.c_str()) != nullptr;
+                  }
+               } else {
+                  // tries to compare integer with starts with
+                  // should throw invalid syntax, but, this will not be so easy
+                  current = false;
+               }
+               break;
+            case Termsequel::Operator::BIGGER:
+               if (compare_string) {
+                  current = std::strcmp(compare_value.string_value, condition->value.c_str()) > 0;
+               } else {
+                  std::uint64_t condition_value = std::atol(condition->value.c_str());
+                  current = compare_value.integer_value > condition_value;
+               }
+               break;
+            case Termsequel::Operator::LESS:
+               if (compare_string) {
+                  current = std::strcmp(compare_value.string_value, condition->value.c_str()) < 0;
+               } else {
+                  std::uint64_t condition_value = std::atol(condition->value.c_str());
+                  current = compare_value.integer_value < condition_value;
+               }
+               break;
+            case Termsequel::Operator::BIGGER_OR_EQUAL:
+               if (compare_string) {
+                  current = std::strcmp(compare_value.string_value, condition->value.c_str()) >= 0;
+               } else {
+                  std::uint64_t condition_value = std::atol(condition->value.c_str());
+                  current = compare_value.integer_value >= condition_value;
+               }
+               break;
+            case Termsequel::Operator::LESS_OR_EQUAL:
+               if (compare_string) {
+                  current = std::strcmp(compare_value.string_value, condition->value.c_str()) <= 0;
+               } else {
+                  std::uint64_t condition_value = std::atol(condition->value.c_str());
+                  current = compare_value.integer_value <= condition_value;
+               }
+               break;
          }
          comparasion.push_back(current);
       }
