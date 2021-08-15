@@ -96,8 +96,10 @@ namespace Termsequel {
             };
          };
 
-         bool operator==(const Token &right) {
-            return type == right.type;
+         bool operator==(const Token &right) const {
+            const std::intptr_t left_address  = (std::intptr_t)this;
+            const std::intptr_t right_address = (std::intptr_t)&right;
+            return left_address == right_address;
          };
 
          const char * name() const {
@@ -265,14 +267,14 @@ void Termsequel::Compiler::execute() {
 
       for (const auto lexeme: lexemes) {
 
-         auto token = *(lexeme)->token;
-         if (token == Token::SELECT) {
+         const auto token = (lexeme)->token;
+         if (Token::SELECT == *(token)) {
             system_command.command = COMMAND_TYPE::LIST;
-         } else if ( token == Token::NAME ) {
+         } else if ( Token::NAME == *(token) ) {
             system_command.columns.push_back(COLUMN_TYPE::FILENAME);
-         } else if ( token == Token::SIZE ) {
+         } else if ( Token::SIZE == *(token) ) {
             system_command.columns.push_back((COLUMN_TYPE::FILESIZE));
-         } else if ( token == Token::IDENTIFIER ) {
+         } else if ( Token::IDENTIFIER == *(token) ) {
             system_command.target = *(lexeme->value);
          }
       }
