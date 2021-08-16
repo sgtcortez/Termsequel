@@ -317,7 +317,6 @@ void Termsequel::Compiler::execute() {
 
          const auto token = (lexeme)->token;
 
-
          if (!has_conditions) {
             // BEFORE WHERE
             if (Token::SELECT == *(token)) {
@@ -375,7 +374,6 @@ void Termsequel::Compiler::execute() {
             } else if ( Token::OR == *(token) ) {
                system_command.conditions->operators.push_back(LogicalOperator::OR);
             }
-
          }
 
       }
@@ -386,6 +384,15 @@ void Termsequel::Compiler::execute() {
          delete row;
       }
       delete result_rows;
+
+      if (system_command.conditions) {
+         for( auto element : system_command.conditions->conditions) {
+            delete element;
+         }
+         delete system_command.conditions;
+      }
+
+
    }
 
 
