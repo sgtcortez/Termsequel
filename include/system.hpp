@@ -47,12 +47,6 @@ namespace Termsequel {
       std::vector<Condition*> conditions;
       std::vector<LogicalOperator> operators;
 
-      ~ConditionList() {
-         for(const auto element : conditions) {
-            delete element;
-         }
-      }
-
    };
 
 
@@ -62,10 +56,6 @@ namespace Termsequel {
       std::vector<COLUMN_TYPE> columns; // the columns to be retrieved
       std::string target;               // the target file/directory
       struct ConditionList *conditions; // The conditions that must be satisfied
-
-      ~Command() {
-         delete conditions;
-      }
    };
 
    class System {
