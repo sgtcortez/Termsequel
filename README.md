@@ -101,6 +101,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             Returns the owner of the file.  
 
+        + LEVEL
+
+            Defines the distance to go when searching files. 
+
     - ### SELECT
 
         The same syntax as a SQL database.    

@@ -65,6 +65,8 @@ namespace Termsequel {
          static const Token SELECT;
          static const Token NAME;
          static const Token SIZE;
+         static const Token OWNER;
+         static const Token LEVEL;
          static const Token FROM;
          static const Token IDENTIFIER;
          static const Token WHERE;
@@ -78,7 +80,6 @@ namespace Termsequel {
          static const Token LESS;
          static const Token BIGGER_OR_EQUAL;
          static const Token LESS_OR_EQUAL;
-         static const Token OWNER;
          static const Token AND;
          static const Token OR;
 
@@ -130,6 +131,7 @@ namespace Termsequel {
    Token const Token::NAME            = (TokenType::TYPE_COLUMN);
    Token const Token::SIZE            = (TokenType::TYPE_COLUMN);
    Token const Token::OWNER           = (TokenType::TYPE_COLUMN);
+   Token const Token::LEVEL           = (TokenType::TYPE_COLUMN);
    Token const Token::FROM            = (TokenType::TYPE_FROM);
    Token const Token::IDENTIFIER      = (TokenType::TYPE_IDENTIFIER);
    Token const Token::WHERE           = (TokenType::TYPE_WHERE);
@@ -224,6 +226,8 @@ namespace Termsequel {
                return new Lexeme (Token::BIGGER_OR_EQUAL);
             } else if ( string.compare("<=") == 0 ) {
                return new Lexeme (Token::LESS_OR_EQUAL);
+            } else if ( string.compare("LEVEL") == 0 ) {
+               return new Lexeme ( Token::LEVEL );
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -327,6 +331,8 @@ void Termsequel::Compiler::execute() {
                system_command.columns.push_back((COLUMN_TYPE::FILESIZE));
             } else if ( Token::OWNER == *(token) ) {
                system_command.columns.push_back(COLUMN_TYPE::OWNER);
+            } else if ( Token::LEVEL == *(token) ) {
+               system_command.columns.push_back(COLUMN_TYPE::LEVEL);
             } else if ( Token::IDENTIFIER == *(token) ) {
                system_command.target = *(lexeme->value);
             } else if ( Token::WHERE == *(token) ) {
@@ -346,6 +352,9 @@ void Termsequel::Compiler::execute() {
             } else if ( Token::OWNER == *(token) ) {
                current_condition = new struct Condition;
                current_condition->column = COLUMN_TYPE::OWNER;
+            } else if ( Token::LEVEL == *(token) ) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::LEVEL;
             } else if ( Token::EQUAL == *(token) ) {
                current_condition->operator_value = Operator::EQUAL;
             } else if ( Token::STARTS_WITH == *(token)) {
