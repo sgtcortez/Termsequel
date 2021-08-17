@@ -1,6 +1,7 @@
 # Summary
 - [Termsequel](#Termsequel)    
-    - [What is](#What-is)
+    - [What is](#What-is)    
+    - [Dependencies](#Dependencies)
     - [Goals](#Goals)
         + [Personal](#Personal)
         + [Project](#Project)
@@ -24,6 +25,13 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel)
 - ## What is
 
     Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.  
+
+- ## Dependencies
+
+    To execute the binary, you will need just one dependency! A implementation of the [C++ standard library](https://en.wikipedia.org/wiki/C%2B%2B_Standard_Library).   
+    **Note:** The implementation might be installed by default in your operating system. If you are on an embedded system, you may install it by yourself.
+
+    If you want to compile, then, you will need a C++ compiler. I suggest [**clang**](https://clang.llvm.org/)!
 
 - ## Goals
 
