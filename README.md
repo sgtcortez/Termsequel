@@ -105,6 +105,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             Defines the distance to go when searching files. 
 
+        + FILE_TYPE
+
+            The type of the file.
+
     - ### SELECT
 
         The same syntax as a SQL database.    
