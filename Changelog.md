@@ -26,4 +26,4 @@ Contains information about the versions of Termsequel
         | Rewrite of Lexical and Syntax Analysis | NE | [PR](https://github.com/sgtcortez/Termsequel/pull/7) | Rewrite the analysis to make it more programmer friendly. Report more useful errors |
         | Owner colum | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/10) | [PR](https://github.com/sgtcortez/Termsequel/pull/20) | Add the file owner column |
         | Where support | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/14) | [PR](https://github.com/sgtcortez/Termsequel/pull/26) | Add support for where filters |  
-        
+        | Level column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/13) | [PR](https://github.com/sgtcortez/Termsequel/pull/28) |

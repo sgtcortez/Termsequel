@@ -26,6 +26,10 @@
 // Stores the members that are useful to store
 // from stat result
 struct StatResult {
+
+   // the deepth level of the file
+   std::uint16_t level;
+
    // filesize in bytes
    std::uint64_t size;
 
@@ -43,8 +47,14 @@ union Comparasion {
 };
 
 // Returns the information about a directory and all its subdirectories/files
-static std::vector<struct StatResult *> * get_directory_information(std::string name);
-static std::vector<struct StatResult *> * get_information(std::string name);
+static std::vector<struct StatResult *> * get_directory_information(
+   std::string name,
+   std::uint64_t max_level
+);
+static std::vector<struct StatResult *> * get_information(
+   std::string name,
+   std::uint64_t max_level
+);
 
 // Checks if the value should return to the user
 static bool should_return(
@@ -61,7 +71,7 @@ static std::string get_owner_name(uid_t owner);
 std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *command) {
 
    // FIXME. This is not good, and needs a good refactor
-   const auto stat_array = get_information(command->target);
+   const auto stat_array = get_information(command->target, 0);
    for (auto iterator = stat_array->begin(); iterator != stat_array->end();) {
       if (!(should_return(*iterator, command->conditions))) {
          delete *iterator;
@@ -80,6 +90,7 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
    std::size_t bigger_filename = strlen("Filename");
    std::size_t bigger_column = strlen("Size");
    std::size_t bigger_owner = strlen("Owner");
+   std::size_t bigger_level   = strlen("Level");
 
    for (const auto stat_element : *stat_array ) {
       for (const auto column: command->columns) {
@@ -97,6 +108,12 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
          if ( column == COLUMN_TYPE::OWNER ) {
             if ( stat_element->owner.size() > bigger_owner ) {
                bigger_owner = stat_element->owner.size();
+            }
+         }
+         if ( column == COLUMN_TYPE::LEVEL ) {
+               std::string number_string = std::to_string(stat_element->level);
+            if ( number_string.size() > bigger_level ) {
+               bigger_level = number_string.size();
             }
          }
       }
@@ -121,6 +138,10 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
       if ( column == COLUMN_TYPE::OWNER ) {
          header->append(" Owner");
          header->insert(header->end(), bigger_owner - strlen("Owner"), ' ');
+      }
+      if ( column == COLUMN_TYPE::LEVEL ) {
+         header->append(" Level");
+         header->insert(header->end(), bigger_level - strlen("Level"), ' ');
       }
    }
    rows->push_back(header);
@@ -147,6 +168,12 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
             string->append(stat_element->owner);
             string->insert(string->end(), bigger_owner - stat_element->owner.size(), ' ');
          }
+         if ( column == COLUMN_TYPE::LEVEL ) {
+               std::string column_value = std::to_string(stat_element->level);
+               string->push_back(' ');
+               string->append(column_value);
+               string->insert(string->end(), bigger_column - column_value.size() , ' ');
+         }
       }
       rows->push_back(string);
       delete stat_element;
@@ -156,7 +183,10 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
 };
 
 
-static std::vector<struct StatResult *> * get_information(std::string name){
+static std::vector<struct StatResult *> * get_information(
+   std::string name,
+   std::uint64_t max_level
+){
     // check if file is directory, if so, iterate over directory(might go recursively)
     // otherwise, just return information about the specific file
 
@@ -175,7 +205,8 @@ static std::vector<struct StatResult *> * get_information(std::string name){
 
    if ( stat_buffer.st_mode & S_IFDIR ) {
       // directory
-      return get_directory_information(name);
+      // goes recursively
+      return get_directory_information(name, max_level);
    } else if ( stat_buffer.st_mode & S_IFREG ) {
       // Regular file
 
@@ -184,6 +215,7 @@ static std::vector<struct StatResult *> * get_information(std::string name){
       stat_value->filename = name;
       stat_value->size = stat_buffer.st_size;
       stat_value->owner = get_owner_name(stat_buffer.st_uid);
+      stat_value->level = max_level;
       auto vector = new std::vector<struct StatResult *>;
       vector->push_back(stat_value);
       return vector;
@@ -193,7 +225,10 @@ static std::vector<struct StatResult *> * get_information(std::string name){
    return new std::vector<struct StatResult *>;
 }
 
-static std::vector<struct StatResult *> * get_directory_information(std::string name) {
+static std::vector<struct StatResult *> * get_directory_information(
+   std::string name,
+   std::uint64_t max_level
+) {
 
    DIR *directory = opendir(name.c_str());
    struct dirent *directory_entry = nullptr;
@@ -212,7 +247,8 @@ static std::vector<struct StatResult *> * get_directory_information(std::string 
       // or, use the fstat function. Then, we can pass only the directory fd and the file name
       std::string relative_path = name + "/" + directory_entry->d_name;
 
-      auto info_vector = get_information(relative_path);
+      // since, it will go recursively, we increment the actual level
+      auto info_vector = get_information(relative_path, max_level + 1);
       for ( auto element : *info_vector) {
          vector->push_back(element);
       }
@@ -275,6 +311,10 @@ static bool should_return(
                break;
             case Termsequel::COLUMN_TYPE::OWNER:
                compare_value.string_value = row->owner.c_str();
+               break;
+            case Termsequel::COLUMN_TYPE::LEVEL:
+               compare_value.integer_value = row->level;
+               compare_string = false;
                break;
          }
 
