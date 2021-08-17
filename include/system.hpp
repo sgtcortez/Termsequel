@@ -15,11 +15,16 @@ namespace Termsequel {
    };
 
    enum class COLUMN_TYPE {
-      FILENAME, // name of the file
-      FILESIZE, // size of the file,
-      OWNER,    // owner of the file
-      LEVEL,    // level of file in the deepth directory search
-      FILE_TYPE // type of the file. Regular file, directory etc ...
+      FILENAME,  // name of the file
+      FILESIZE,  // size of the file,
+      OWNER,     // owner of the file
+      LEVEL,     // level of file in the deepth directory search
+      FILE_TYPE, // type of the file. Regular file, directory etc ...
+      OWNER_PERMISSIONS, // permissions of the owner
+#ifdef __linux__
+      GROUP_PERMISSIONS, // permissions of the group
+      OTHERS_PERMISSIONS, // permissions of others
+#endif
    };
 
    enum class LogicalOperator {

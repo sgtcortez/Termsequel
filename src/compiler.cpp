@@ -68,6 +68,13 @@ namespace Termsequel {
          static const Token OWNER;
          static const Token LEVEL;
          static const Token FILE_TYPE;
+         static const Token OWNER_PERMISSIONS;
+// According to https://docs.microsoft.com/en-us/cpp/c-runtime-library/stat-structure-st-mode-field-constants?view=msvc-160
+// Windows does not have group and others flags
+#ifdef __linux__
+         static const Token GROUP_PERMISSIONS;
+         static const Token OTHERS_PERMISSIONS;
+#endif
          static const Token FROM;
          static const Token IDENTIFIER;
          static const Token WHERE;
@@ -127,27 +134,32 @@ namespace Termsequel {
 
    // initializes the static instances.
    // There are no need to free this ...
-   Token const Token::SELECT          = (TokenType::TYPE_COMMAND);
-   Token const Token::NAME            = (TokenType::TYPE_COLUMN);
-   Token const Token::SIZE            = (TokenType::TYPE_COLUMN);
-   Token const Token::OWNER           = (TokenType::TYPE_COLUMN);
-   Token const Token::LEVEL           = (TokenType::TYPE_COLUMN);
-   Token const Token::FILE_TYPE       = (TokenType::TYPE_COLUMN);
-   Token const Token::FROM            = (TokenType::TYPE_FROM);
-   Token const Token::IDENTIFIER      = (TokenType::TYPE_IDENTIFIER);
-   Token const Token::WHERE           = (TokenType::TYPE_WHERE);
-   Token const Token::COMMA           = (TokenType::TYPE_COMMA);
-   Token const Token::END             = (TokenType::TYPE_END);
-   Token const Token::EQUAL           = (TokenType::TYPE_COMPARASION);
-   Token const Token::STARTS_WITH     = (TokenType::TYPE_COMPARASION);
-   Token const Token::ENDS_WITH       = (TokenType::TYPE_COMPARASION);
-   Token const Token::BIGGER          = (TokenType::TYPE_COMPARASION);
-   Token const Token::LESS            = (TokenType::TYPE_COMPARASION);
-   Token const Token::BIGGER_OR_EQUAL = (TokenType::TYPE_COMPARASION);
-   Token const Token::LESS_OR_EQUAL   = (TokenType::TYPE_COMPARASION);
-   Token const Token::CONTAINS        = (TokenType::TYPE_COMPARASION);
-   Token const Token::AND             = (TokenType::TYPE_LOGICAL);
-   Token const Token::OR              = (TokenType::TYPE_LOGICAL);
+   Token const Token::SELECT             = (TokenType::TYPE_COMMAND);
+   Token const Token::NAME               = (TokenType::TYPE_COLUMN);
+   Token const Token::SIZE               = (TokenType::TYPE_COLUMN);
+   Token const Token::OWNER              = (TokenType::TYPE_COLUMN);
+   Token const Token::LEVEL              = (TokenType::TYPE_COLUMN);
+   Token const Token::FILE_TYPE          = (TokenType::TYPE_COLUMN);
+   Token const Token::OWNER_PERMISSIONS  = (TokenType::TYPE_COLUMN);
+#ifdef __linux__
+   Token const Token::GROUP_PERMISSIONS  = (TokenType::TYPE_COLUMN);
+   Token const Token::OTHERS_PERMISSIONS = (TokenType::TYPE_COLUMN);
+#endif
+   Token const Token::FROM               = (TokenType::TYPE_FROM);
+   Token const Token::IDENTIFIER         = (TokenType::TYPE_IDENTIFIER);
+   Token const Token::WHERE              = (TokenType::TYPE_WHERE);
+   Token const Token::COMMA              = (TokenType::TYPE_COMMA);
+   Token const Token::END                = (TokenType::TYPE_END);
+   Token const Token::EQUAL              = (TokenType::TYPE_COMPARASION);
+   Token const Token::STARTS_WITH        = (TokenType::TYPE_COMPARASION);
+   Token const Token::ENDS_WITH          = (TokenType::TYPE_COMPARASION);
+   Token const Token::BIGGER             = (TokenType::TYPE_COMPARASION);
+   Token const Token::LESS               = (TokenType::TYPE_COMPARASION);
+   Token const Token::BIGGER_OR_EQUAL    = (TokenType::TYPE_COMPARASION);
+   Token const Token::LESS_OR_EQUAL      = (TokenType::TYPE_COMPARASION);
+   Token const Token::CONTAINS           = (TokenType::TYPE_COMPARASION);
+   Token const Token::AND                = (TokenType::TYPE_LOGICAL);
+   Token const Token::OR                 = (TokenType::TYPE_LOGICAL);
 
    struct Lexeme {
 
@@ -231,6 +243,14 @@ namespace Termsequel {
                return new Lexeme ( Token::LEVEL );
             } else if ( string.compare("FILE_TYPE") == 0 ) {
                return new Lexeme (Token::FILE_TYPE);
+            } else if ( string.compare("OWNER_PERMISSIONS") == 0 ) {
+               return new Lexeme (Token::OWNER_PERMISSIONS);
+#ifdef __linux__
+            } else if ( string.compare("GROUP_PERMISSIONS") == 0 ) {
+               return new Lexeme (Token::GROUP_PERMISSIONS);
+            } else if ( string.compare("OTHERS_PERMISSIONS") == 0 ) {
+               return new Lexeme (Token::OTHERS_PERMISSIONS);
+#endif
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -352,6 +372,14 @@ void Termsequel::Compiler::execute() {
                system_command.columns.push_back(COLUMN_TYPE::LEVEL);
             } else if (Token::FILE_TYPE == *(token) ) {
                system_command.columns.push_back(COLUMN_TYPE::FILE_TYPE);
+            } else if (Token::OWNER_PERMISSIONS == *(token) ) {
+               system_command.columns.push_back(COLUMN_TYPE::OWNER_PERMISSIONS);
+#ifdef __linux__
+            } else if (Token::GROUP_PERMISSIONS == *(token)) {
+               system_command.columns.push_back(COLUMN_TYPE::GROUP_PERMISSIONS);
+            } else if (Token::OTHERS_PERMISSIONS == *(token) ) {
+               system_command.columns.push_back(COLUMN_TYPE::OTHERS_PERMISSIONS);
+#endif
             } else if ( Token::IDENTIFIER == *(token) ) {
                system_command.target = *(lexeme->value);
             } else if ( Token::WHERE == *(token) ) {
@@ -377,6 +405,17 @@ void Termsequel::Compiler::execute() {
             } else if ( Token::FILE_TYPE == *(token) ) {
                current_condition = new struct Condition;
                current_condition->column = COLUMN_TYPE::FILE_TYPE;
+            } else if (Token::OWNER_PERMISSIONS == *(token) ) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::OWNER_PERMISSIONS;
+#ifdef __linux__
+            } else if (Token::GROUP_PERMISSIONS == *(token)) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::GROUP_PERMISSIONS;
+            } else if (Token::OTHERS_PERMISSIONS == *(token) ) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::OTHERS_PERMISSIONS;
+#endif
             } else if ( Token::EQUAL == *(token) ) {
                current_condition->operator_value = Operator::EQUAL;
             } else if ( Token::STARTS_WITH == *(token)) {

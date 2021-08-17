@@ -104,6 +104,23 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             The type of the file.
 
+        + OWNER_PERMISSIONS
+
+            Returns the permissions of the owner of the file.     
+            The value, must be in octal mode!
+
+        + GROUP_PERMISSIONS
+
+            **Just for Linux**.    
+            Returns the permissions of the group of the file.     
+            The value, must be in octal mode!
+
+        + OTHERS_PERMISSIONS
+
+            **Just for Linux**.    
+            Returns the permissions of other users.    
+            The value, must be in octal mode!
+
     - ### SELECT
 
         The same syntax as a SQL database.    
@@ -133,8 +150,17 @@ $ termsequel 'SELECT NAME FROM /HOME'
         ```sql
         SELECT NAME FROM . WHERE OWNER = myuser AND SIZE > 10
         ```
-
         The logical operators are: **AND** and **OR**.    
+
+        **Example:** Check if owner has execute permission in a file:    
+        ```sql
+        SELECT NAME, OWNER_PERMISSIONS FROM . WHERE OWNER_PERMISSIONS CONTAINS X
+        -- Returns the files that the owner has the execute flag set.
+        SELECT NAME, OWNER_PERMISSIONS FROM . WHERE OWNER_PERMISSIONS CONTAINS R AND OWNER_PERMISSIONS CONTAINS X   
+        -- Returns the files that the owner has the read and execute flag set.
+        ```
+
+
 
 
 # Developers
