@@ -74,7 +74,7 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel)
 
     - ### Mac
 
-        I do not have an MacOS. So, I do not know how I will make it portable.
+        I do not have a MacOS. So, I do not know how I will make it portable.
 
 # Users
 Some advices to run **Termsequel**.   
@@ -98,21 +98,20 @@ $ termsequel 'SELECT NAME FROM /HOME'
     
         * NAME
 
-            Returns the name of the file.
+            The name of the file.
 
         + SIZE
 
-            Returns the size in bytes of the file.   
-            Size of an directory may not be correct. Because, to get the real size, we need to retrive all the files/subdirectories, and calculate all of them.
+            The size in bytes of the file.
 
         + OWNER 
 
-            Returns the owner of the file.  
+            The owner of the file.
 
         + LEVEL
 
-            Defines the distance to go when searching files. 
-
+            The depth level. Considering the from value as the relative path(if a directory).
+            
         + FILE_TYPE
 
             The type of the file.
