@@ -20,6 +20,7 @@ namespace Termsequel {
       FILESIZE, // size of the file,
       OWNER,    // owner of the file
       LEVEL,    // level of file in the deepth directory search
+      FILE_TYPE // type of the file. Regular file, directory etc ...
    };
 
    enum class LogicalOperator {

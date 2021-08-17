@@ -39,6 +39,9 @@ struct StatResult {
    // does not return from stat
    std::string filename;
 
+   // the type of the file
+   std::string file_type;
+
 };
 
 union Comparasion {
@@ -91,6 +94,7 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
    std::size_t bigger_column = strlen("Size");
    std::size_t bigger_owner = strlen("Owner");
    std::size_t bigger_level   = strlen("Level");
+   std::size_t bigger_file_type = strlen("File Type");
 
    for (const auto stat_element : *stat_array ) {
       for (const auto column: command->columns) {
@@ -116,6 +120,11 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
                bigger_level = number_string.size();
             }
          }
+         if ( column == COLUMN_TYPE::FILE_TYPE ) {
+            if (stat_element->file_type.size() > bigger_file_type) {
+               bigger_file_type = stat_element->file_type.size();
+            }
+          }
       }
    }
 
@@ -142,6 +151,10 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
       if ( column == COLUMN_TYPE::LEVEL ) {
          header->append(" Level");
          header->insert(header->end(), bigger_level - strlen("Level"), ' ');
+      }
+      if ( column == COLUMN_TYPE::FILE_TYPE ) {
+         header->append(" File Type");
+         header->insert(header->end(), bigger_file_type - strlen("File Type"), ' ');
       }
    }
    rows->push_back(header);
@@ -173,6 +186,11 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
                string->push_back(' ');
                string->append(column_value);
                string->insert(string->end(), bigger_column - column_value.size() , ' ');
+         }
+         if ( column == COLUMN_TYPE::FILE_TYPE ) {
+            string->push_back(' ');
+            string->append(stat_element->file_type);
+            string->insert(string->end(), bigger_file_type - stat_element->file_type.size(), ' ');
          }
       }
       rows->push_back(string);
@@ -207,22 +225,42 @@ static std::vector<struct StatResult *> * get_information(
       // directory
       // goes recursively
       return get_directory_information(name, max_level);
-   } else if ( stat_buffer.st_mode & S_IFREG ) {
-      // Regular file
-
-      // Store the stat result in the heap
-      auto stat_value = new struct StatResult;
-      stat_value->filename = name;
-      stat_value->size = stat_buffer.st_size;
-      stat_value->owner = get_owner_name(stat_buffer.st_uid);
-      stat_value->level = max_level;
-      auto vector = new std::vector<struct StatResult *>;
-      vector->push_back(stat_value);
-      return vector;
    }
 
-   // unsupported type, for now, returns empty vector
-   return new std::vector<struct StatResult *>;
+   // Store the stat result in the heap
+   auto stat_value = new struct StatResult;
+   stat_value->filename = name;
+   stat_value->size = stat_buffer.st_size;
+   stat_value->owner = get_owner_name(stat_buffer.st_uid);
+   stat_value->level = max_level;
+
+   // S_IFMT -> bit mask for the file type bit field
+   switch (stat_buffer.st_mode & S_IFMT) {
+      case S_IFSOCK:
+         stat_value->file_type = "SOCKET";
+         break;
+      case S_IFLNK:
+         stat_value->file_type = "LINK";
+         break;
+      case S_IFREG:
+         stat_value->file_type = "REGULAR";
+         break;
+      case S_IFBLK:
+         stat_value->file_type = "BLOCK";
+         break;
+      case S_IFCHR:
+         stat_value->file_type = "CHARACTER";
+         break;
+      case S_IFIFO:
+         stat_value->file_type = "FIFO";
+         break;
+      default:
+         break;
+   }
+   auto vector = new std::vector<struct StatResult *>;
+   vector->push_back(stat_value);
+   return vector;
+
 }
 
 static std::vector<struct StatResult *> * get_directory_information(
@@ -315,6 +353,9 @@ static bool should_return(
             case Termsequel::COLUMN_TYPE::LEVEL:
                compare_value.integer_value = row->level;
                compare_string = false;
+               break;
+            case Termsequel::COLUMN_TYPE::FILE_TYPE:
+               compare_value.string_value = row->file_type.c_str();
                break;
          }
 
