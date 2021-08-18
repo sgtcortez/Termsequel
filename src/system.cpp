@@ -229,7 +229,11 @@ static std::vector<struct StatResult *> * get_information(
 
    // Store the stat result in the heap
    auto stat_value = new struct StatResult;
-   stat_value->filename = name;
+   if (name.find_first_of("/") != std::string::npos){
+      stat_value->filename = name.substr(name.find_last_of("/") + 1);
+   } else {
+      stat_value->filename = name;
+   }
    stat_value->size = stat_buffer.st_size;
    stat_value->owner = get_owner_name(stat_buffer.st_uid);
    stat_value->level = max_level;
