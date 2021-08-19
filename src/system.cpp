@@ -53,12 +53,12 @@ union Comparasion {
 static std::vector<struct StatResult *> * get_directory_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint64_t max_level
+   std::uint64_t current_level
 );
 static std::vector<struct StatResult *> * get_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint64_t max_level
+   std::uint64_t current_level
 );
 
 // Checks if the value should return to the user
@@ -203,7 +203,7 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
 static std::vector<struct StatResult *> * get_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint64_t max_level
+   std::uint64_t current_level
 ){
     // check if file is directory, if so, iterate over directory(might go recursively)
     // otherwise, just return information about the specific file
@@ -224,8 +224,8 @@ static std::vector<struct StatResult *> * get_information(
    if ( stat_buffer.st_mode & S_IFDIR ) {
       // directory
       // goes recursively
-      if ( should_go_recursive(max_level, conditions) ) {
-         return get_directory_information(name, conditions, max_level);
+      if ( should_go_recursive(current_level, conditions) ) {
+         return get_directory_information(name, conditions, current_level);
       } else {
          // didnt match the level criteria, will not go recursively
          return new std::vector<struct StatResult *>;
@@ -242,7 +242,7 @@ static std::vector<struct StatResult *> * get_information(
    }
    stat_value->size = stat_buffer.st_size;
    stat_value->owner = get_owner_name(stat_buffer.st_uid);
-   stat_value->level = max_level;
+   stat_value->level = current_level;
 
    // S_IFMT -> bit mask for the file type bit field
    switch (stat_buffer.st_mode & S_IFMT) {
@@ -280,7 +280,7 @@ static std::vector<struct StatResult *> * get_information(
 static std::vector<struct StatResult *> * get_directory_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint64_t max_level
+   std::uint64_t current_level
 ) {
 
    DIR *directory = opendir(name.c_str());
@@ -301,7 +301,7 @@ static std::vector<struct StatResult *> * get_directory_information(
       std::string relative_path = name + "/" + directory_entry->d_name;
 
       // since, it will go recursively, we increment the actual level
-      auto info_vector = get_information(relative_path, conditions, max_level + 1);
+      auto info_vector = get_information(relative_path, conditions, current_level + 1);
       for ( auto element : *info_vector) {
          vector->push_back(element);
       }
