@@ -52,16 +52,25 @@ union Comparasion {
 // Returns the information about a directory and all its subdirectories/files
 static std::vector<struct StatResult *> * get_directory_information(
    std::string name,
+   Termsequel::ConditionList *conditions,
    std::uint64_t max_level
 );
 static std::vector<struct StatResult *> * get_information(
    std::string name,
+   Termsequel::ConditionList *conditions,
    std::uint64_t max_level
 );
 
 // Checks if the value should return to the user
 static bool should_return(
    struct StatResult *row,
+   struct Termsequel::ConditionList *condition_list
+);
+
+// Checks if the shoud enter the directory
+// Checks only for the level condition
+static bool should_go_recursive(
+   std::int32_t current_level,
    struct Termsequel::ConditionList *condition_list
 );
 
@@ -73,17 +82,7 @@ static std::string get_owner_name(uid_t owner);
 
 std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *command) {
 
-   // FIXME. This is not good, and needs a good refactor
-   const auto stat_array = get_information(command->target, 0);
-   for (auto iterator = stat_array->begin(); iterator != stat_array->end();) {
-      if (!(should_return(*iterator, command->conditions))) {
-         delete *iterator;
-         iterator = stat_array->erase(iterator);
-      } else {
-         iterator++;
-      }
-   }
-
+   const auto stat_array = get_information(command->target, command->conditions, 0);
 
    // convert the raw input from stat to a beautiful input, considering user column order
    const auto rows = new std::vector<std::string *>;
@@ -203,6 +202,7 @@ std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *co
 
 static std::vector<struct StatResult *> * get_information(
    std::string name,
+   Termsequel::ConditionList *conditions,
    std::uint64_t max_level
 ){
     // check if file is directory, if so, iterate over directory(might go recursively)
@@ -224,7 +224,13 @@ static std::vector<struct StatResult *> * get_information(
    if ( stat_buffer.st_mode & S_IFDIR ) {
       // directory
       // goes recursively
-      return get_directory_information(name, max_level);
+      if ( should_go_recursive(max_level, conditions) ) {
+         return get_directory_information(name, conditions, max_level);
+      } else {
+         // didnt match the level criteria, will not go recursively
+         return new std::vector<struct StatResult *>;
+      }
+
    }
 
    // Store the stat result in the heap
@@ -262,13 +268,18 @@ static std::vector<struct StatResult *> * get_information(
          break;
    }
    auto vector = new std::vector<struct StatResult *>;
-   vector->push_back(stat_value);
+   if (should_return(stat_value, conditions)) {
+      vector->push_back(stat_value);
+   } else {
+      delete stat_value;
+   }
    return vector;
 
 }
 
 static std::vector<struct StatResult *> * get_directory_information(
    std::string name,
+   Termsequel::ConditionList *conditions,
    std::uint64_t max_level
 ) {
 
@@ -290,7 +301,7 @@ static std::vector<struct StatResult *> * get_directory_information(
       std::string relative_path = name + "/" + directory_entry->d_name;
 
       // since, it will go recursively, we increment the actual level
-      auto info_vector = get_information(relative_path, max_level + 1);
+      auto info_vector = get_information(relative_path, conditions, max_level + 1);
       for ( auto element : *info_vector) {
          vector->push_back(element);
       }
@@ -465,4 +476,35 @@ static bool should_return(
 
    // returns the conditions value
    return ok;
+}
+
+static bool should_go_recursive(
+   std::int32_t current_level,
+   struct Termsequel::ConditionList *condition_list
+) {
+   if (!condition_list) return true;
+
+   for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
+      const auto condition = condition_list->conditions[index];
+      switch (condition->column) {
+         case Termsequel::COLUMN_TYPE::LEVEL:
+            if (condition->operator_value == Termsequel::Operator::LESS) {
+               std::int64_t value = std::atoll(condition->value.c_str());
+               return current_level < value;
+            } else if ( condition->operator_value == Termsequel::Operator::LESS_OR_EQUAL ) {
+               std::int64_t value = std::atoll(condition->value.c_str());
+               return current_level <= value;
+            } else if ( condition->operator_value == Termsequel::Operator::EQUAL ) {
+               std::int64_t value = std::atoll(condition->value.c_str());
+               return current_level <= value;
+            } else {
+               // should continue to go recursively
+               return true;
+            }
+            break;
+         default:
+            break;
+      }
+   }
+   return true;
 }
