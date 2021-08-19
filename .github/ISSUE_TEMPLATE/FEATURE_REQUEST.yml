@@ -1,0 +1,28 @@
+name: Feature Request
+description: A new feature 
+title: "[FEAT]: "
+labels: [enchancement]
+assignees:
+  - sgtcortez
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to bring us your ideia!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: What is your suggestion?
+      description: What are you expecting with this, do you really believe that would be nice to Termequel implement this?
+      placeholder: Your expection
+      value: "Your ideia here!"
+    validations:
+      required: true
