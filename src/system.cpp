@@ -284,9 +284,13 @@ static std::vector<struct StatResult *> * get_directory_information(
 ) {
 
    DIR *directory = opendir(name.c_str());
-   struct dirent *directory_entry = nullptr;
-   if (directory == nullptr) return nullptr;
    auto vector = new std::vector<struct StatResult *>;
+   struct dirent *directory_entry = nullptr;
+   if (directory == nullptr) {
+      // could not open the directory, might be because of permissions
+      // so, just returns an empty vector
+      return vector;
+   }
    while(true) {
       directory_entry = readdir(directory);
       if ( !(directory_entry))  {
