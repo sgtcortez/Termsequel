@@ -344,8 +344,7 @@ static bool should_return(
          bool compare_string = true;
          switch (condition->column) {
             case Termsequel::COLUMN_TYPE::FILENAME:
-               // Ignore the absolute path, and gets just the filename.
-               compare_value.string_value = row->filename.substr(row->filename.find_last_of("/") + 1).c_str();
+               compare_value.string_value = row->filename.c_str();
                break;
             case Termsequel::COLUMN_TYPE::FILESIZE:
                compare_value.integer_value = row->size;
