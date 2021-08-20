@@ -302,6 +302,7 @@ void Termsequel::Compiler::execute() {
       if ((*lexeme).token->is_end()) break;
    }
 
+   bool found_where = false;
    for (unsigned long index = 1L; index < lexemes.size(); index ++) {
       const auto previous = lexemes[index - 1];
       const auto current = lexemes[index];
@@ -310,6 +311,19 @@ void Termsequel::Compiler::execute() {
          std::cerr << "Near Tokens:" << *previous << " and " << *current << std::endl;
          has_errors = true;
          break;
+      }
+      if (Token::WHERE == *(current->token)) {
+         if (found_where) {
+            // error
+            // can not have 2 where
+            std::cerr << "Invalid SYNTAX!" << std::endl;
+            std::cerr << "Near Tokens:" << *previous << " and " << *current << std::endl;
+            std::cerr << "Can not have 2 wheres at the same instuction!. Use AND or OR instead!" << std::endl;
+            has_errors = true;
+            break;
+         } else {
+            found_where = true;
+         }
       }
    }
 
