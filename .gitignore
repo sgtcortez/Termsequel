@@ -30,4 +30,7 @@
 *.exe
 *.out
 *.app
-termsequel
+
+# Cmake things
+build
+build/*

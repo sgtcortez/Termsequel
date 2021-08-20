@@ -6,9 +6,6 @@
         + [Personal](#Personal)
         + [Project](#Project)
     - [Installation](#Installation)
-        + [Linux](#Linux)
-        + [Windows](#Windows)
-        + [Mac](#Mac)
 - [Users](#Users)
     + [Features](#Features)
         + [Columns](#Columns)
@@ -53,28 +50,19 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel)
 
 - ## Installation
 
-    For now, you will need to compile the source to be able to use **Termsequel**.   
-    I recommend the [**clang**](https://clang.llvm.org/) compiler.       
+    You will need [CMake](https://cmake.org/) and, one C++ compiler(clang, gcc, MSVC ...) to build the project!    
+    Just, create a directory called `build` and, then execute:   
+    ```shell
+    $ cd build
+    $ cmake ../
+    $ cmake --build
+    ```
+    Since, this project is easy for Cmake, it can detects the operating system and the available compiler.
 
-    - ### Linux
-
-        To install **Termsequel** on your operating system, just run(with superuser privilegies):   
-        ```bash
-        make install
-        ```
-
-        To create the binary to be executed, just run:     
-        ```bash
-        make
-        ```
-
-    - ### Windows
-
-        The development is in progress.
-
-    - ### Mac
-
-        I do not have a MacOS. So, I do not know how I will make it portable.
+    **Obs:** If you are in linux, and, do not have CMake, but, you have make installed, then, you can simple run `make` at the project root:  
+    ```shell
+    $ make 
+    ```
 
 # Users
 Some advices to run **Termsequel**.   
