@@ -1,13 +1,20 @@
 #include <cstdio>
-#include <unistd.h>
+
 
 #include <cstdlib>
 #include <iostream>
 #include <string>
 
+#ifdef __linux__
+   #include <unistd.h>
+   static constexpr const char *short_options = "h";
+
+#elif defined (_WIN32)
+#endif
+
 #include "include/compiler.hpp"
 
-static constexpr const char *short_options = "h";
+
 static constexpr const char *VERSION = "0.1";
 
 using namespace Termsequel;
@@ -24,6 +31,8 @@ int main (
 
     int option;
     char *binary_name = argv[0];
+
+#ifdef __linux__
 
     while ( (option = getopt(argc, argv, short_options)) != -1 ) {
 
@@ -45,6 +54,20 @@ int main (
         compiler.execute();
     }
 
+#elif defined(_WIN32)
+
+   // I do not know if windows has somethig like getopt
+
+   // no arguments were provided!
+   if ( argc == 1 ) {
+      show_help(binary_name, stderr);
+      return 1;
+   } else {
+      std::string sql = argv[argc - 1];
+      Compiler compiler(sql);
+      compiler.execute();
+   }
+#endif
 
     return 0;
 }

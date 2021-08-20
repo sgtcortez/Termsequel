@@ -6,7 +6,6 @@ Contains information about the versions of Termsequel
     - Information
 
         No release date definition yet.  
-        For now, just Linux based operating systems are supported. There is already a development to bring Termsequel to Windows too.  
         I am not sure if I will use CMake or Gradle.
 
     + Developers
@@ -29,4 +28,5 @@ Contains information about the versions of Termsequel
         | Level column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/13) | [PR](https://github.com/sgtcortez/Termsequel/pull/28) | Add the level column, now, users can set the level(directory depth) of a file |
         | File type column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/9) | [PR](https://github.com/sgtcortez/Termsequel/pull/30) | Add the file type column |
         | Filename column display | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/34) | [PR](https://github.com/sgtcortez/Termsequel/pull/38) | The file name column, is displayed with the relative path |
-        | Fix filter conditions too slow | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/36) | [PR](https://github.com/sgtcortez/Termsequel/pull/39) | Filters to slow, because, they were applied at the result set |
+        | Fix filter conditions too slow | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/36) | [PR](https://github.com/sgtcortez/Termsequel/pull/39) | Filters to slow, because, they were applied at the result set | 
+        | Implement support for Windows | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/11) | [PR](https://github.com/sgtcortez/Termsequel/pull/44) | Now, termsequel is available on Windows systems |
