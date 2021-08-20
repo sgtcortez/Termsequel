@@ -1,4 +1,4 @@
-This pull request closes the issue: #<issue_id>.   
+Closes: #<issue_id>.   
 
 # Task list
 This pull request is well tested, and does not break the current code.   
