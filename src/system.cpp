@@ -5,12 +5,45 @@
 #include <cstring>
 #include <string>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <sys/types.h>
-#include <dirent.h>
 #include <streambuf>
 #include <sstream>
 #include <vector>
+
+#ifdef __linux__
+
+   #include <dirent.h>
+   #include <unistd.h>
+
+   #define STAT stat
+   #define IS_DIRECTORY(bitset)(bitset & S_IFDIR)
+   #define FILE_TYPE_MASK S_IFMT
+   #define DIRECTORY_FLAG S_IFDIR
+   #define REGULAR_FLAG   S_IFREG
+   #define CHARACTER_FLAG S_IFCHR
+
+
+   typedef struct stat stat_buffer_t;
+   constexpr static const char FILE_SEPARATOR = '/';
+
+#elif defined(_WIN32)
+
+   #include <io.h> // _findfirst _findnext
+
+   #define STAT _stat
+   #define IS_DIRECTORY(bitset)(bitset & _S_IFDIR)
+   #define FILE_TYPE_MASK  _S_IFMT
+   #define DIRECTORY_FLAG  _S_IFDIR
+   #define REGULAR_FLAG    _S_IFREG
+   #define CHARACTER_FLAG  _S_IFCHR
+
+   typedef struct _stat stat_buffer_t;
+   constexpr static const char FILE_SEPARATOR = '\\';
+
+
+#endif
+
+#define DEBUG_SYSTEM 1
 
 #include "system.hpp"
 
@@ -74,11 +107,15 @@ static bool should_go_recursive(
    struct Termsequel::ConditionList *condition_list
 );
 
+#ifdef __linux__
+
 /**
  * Returns the owner(login) of the file
+ * Windows stat result, does not return the owner and the group!
 */
 static std::string get_owner_name(uid_t owner);
 
+#endif
 
 std::vector<std::string *> * Termsequel::System::execute(Termsequel::Command *command) {
 
@@ -207,10 +244,9 @@ static std::vector<struct StatResult *> * get_information(
 ){
     // check if file is directory, if so, iterate over directory(might go recursively)
     // otherwise, just return information about the specific file
+   stat_buffer_t stat_buffer;
 
-   struct stat stat_buffer;
-
-   if ( stat(name.c_str(), &stat_buffer ) != 0 ) {
+   if ( STAT(name.c_str(), &stat_buffer ) != 0 ) {
       // error
       // Could not stat
       // returns empty vector
@@ -220,8 +256,7 @@ static std::vector<struct StatResult *> * get_information(
       return new std::vector<struct StatResult *>;
    }
 
-
-   if ( stat_buffer.st_mode & S_IFDIR ) {
+   if ( IS_DIRECTORY(stat_buffer.st_mode) ) {
       // directory
       // goes recursively
       if ( should_go_recursive(current_level, conditions) ) {
@@ -230,41 +265,32 @@ static std::vector<struct StatResult *> * get_information(
          // didnt match the level criteria, will not go recursively
          return new std::vector<struct StatResult *>;
       }
-
    }
 
    // Store the stat result in the heap
    auto stat_value = new struct StatResult;
-   if (name.find_first_of("/") != std::string::npos){
-      stat_value->filename = name.substr(name.find_last_of("/") + 1);
+   if (name.find_first_of(FILE_SEPARATOR) != std::string::npos){
+      stat_value->filename = name.substr(name.find_last_of(FILE_SEPARATOR) + 1);
    } else {
       stat_value->filename = name;
    }
    stat_value->size = stat_buffer.st_size;
-   stat_value->owner = get_owner_name(stat_buffer.st_uid);
+   #ifdef __linux__
+      stat_value->owner = get_owner_name(stat_buffer.st_uid);
+   #elif defined(_WIN32)
+      stat_value->owner = "Not available";
+   #endif
    stat_value->level = current_level;
 
    // S_IFMT -> bit mask for the file type bit field
-   switch (stat_buffer.st_mode & S_IFMT) {
-      case S_IFSOCK:
-         stat_value->file_type = "SOCKET";
-         break;
-      case S_IFLNK:
-         stat_value->file_type = "LINK";
-         break;
-      case S_IFREG:
+   switch (stat_buffer.st_mode & FILE_TYPE_MASK) {
+      case REGULAR_FLAG:
          stat_value->file_type = "REGULAR";
-         break;
-      case S_IFBLK:
-         stat_value->file_type = "BLOCK";
-         break;
-      case S_IFCHR:
+      case CHARACTER_FLAG:
          stat_value->file_type = "CHARACTER";
          break;
-      case S_IFIFO:
-         stat_value->file_type = "FIFO";
-         break;
       default:
+         stat_value->file_type = "Unknown";
          break;
    }
    auto vector = new std::vector<struct StatResult *>;
@@ -282,6 +308,8 @@ static std::vector<struct StatResult *> * get_directory_information(
    Termsequel::ConditionList *conditions,
    std::uint64_t current_level
 ) {
+
+#ifdef __linux__
 
    DIR *directory = opendir(name.c_str());
    auto vector = new std::vector<struct StatResult *>;
@@ -314,9 +342,43 @@ static std::vector<struct StatResult *> * get_directory_information(
    }
    closedir(directory);
    return vector;
+
+#elif defined(_WIN32)
+
+   struct _finddata_t entry_file;
+   intptr_t file_pointer;
+   auto vector = new std::vector<struct StatResult*>;
+
+   // get all the files
+   std::string files_to_search = name + "\\*.*";
+   if ((file_pointer = _findfirst(files_to_search.c_str(), &entry_file)) == -1L) {
+      // no file found
+      return vector;
+   }
+   do {
+         // iterate over the files
+      if (entry_file.name[0] == '.' && (entry_file.name[1] == '.' || entry_file.name[1] == '\0')) continue;
+      std::string relative_path = name + FILE_SEPARATOR + entry_file.name;
+      // since, it will go recursively, we increment the actual level
+      auto info_vector = get_information(relative_path, conditions, current_level + 1);
+      for (auto element : *info_vector) {
+         vector->push_back(element);
+      }
+      delete info_vector;
+
+   } while (_findnext(file_pointer, &entry_file) == 0);
+   _findclose(file_pointer);
+
+   return vector;
+
+#endif
+
 }
 
+#ifdef __linux__
+
 static std::string get_owner_name(uid_t owner) {
+
    constexpr std::uint32_t buffer_size = 30;
    char buffer[buffer_size];
    std::string output;
@@ -336,7 +398,10 @@ static std::string get_owner_name(uid_t owner) {
    }
    output.append("Could not get owner ...");
    return output;
+
 }
+#endif
+
 
 static bool should_return(
    struct StatResult *row,

@@ -5,7 +5,6 @@
 #define __TERMSEQUEL_SYSTEM_H__
 
 #include <cstdint>
-#include <unistd.h>
 #include <string>
 #include <vector>
 
