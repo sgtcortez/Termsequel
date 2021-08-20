@@ -6,7 +6,7 @@ Contains information about the versions of Termsequel
     - Information
 
         No release date definition yet.  
-        I am not sure if I will use CMake or Gradle.
+        We use Cmake as the build tool.
 
     + Developers
 
@@ -30,3 +30,4 @@ Contains information about the versions of Termsequel
         | Filename column display | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/34) | [PR](https://github.com/sgtcortez/Termsequel/pull/38) | The file name column, is displayed with the relative path |
         | Fix filter conditions too slow | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/36) | [PR](https://github.com/sgtcortez/Termsequel/pull/39) | Filters to slow, because, they were applied at the result set | 
         | Implement support for Windows | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/11) | [PR](https://github.com/sgtcortez/Termsequel/pull/44) | Now, termsequel is available on Windows systems |
+        | Set CMake as the build tool | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/1) | [PR](https://github.com/sgtcortez/Termsequel/pull/45) | Using CMake, makes the development and the cross compile easy |
