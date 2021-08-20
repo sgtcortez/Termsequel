@@ -26,7 +26,7 @@ Contains information about the versions of Termsequel
         | Rewrite of Lexical and Syntax Analysis | NE | [PR](https://github.com/sgtcortez/Termsequel/pull/7) | Rewrite the analysis to make it more programmer friendly. Report more useful errors |
         | Owner colum | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/10) | [PR](https://github.com/sgtcortez/Termsequel/pull/20) | Add the file owner column |
         | Where support | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/14) | [PR](https://github.com/sgtcortez/Termsequel/pull/26) | Add support for where filters |  
-        | Level column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/13) | [PR](https://github.com/sgtcortez/Termsequel/pull/28) |
+        | Level column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/13) | [PR](https://github.com/sgtcortez/Termsequel/pull/28) | Add the level column, now, users can set the level(directory depth) of a file |
         | File type column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/9) | [PR](https://github.com/sgtcortez/Termsequel/pull/30) | Add the file type column |
         | Filename column display | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/34) | [PR](https://github.com/sgtcortez/Termsequel/pull/38) | The file name column, is displayed with the relative path |
-        | Fix filter conditions too slow | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/36) | [PR]()
+        | Fix filter conditions too slow | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/36) | [PR](https://github.com/sgtcortez/Termsequel/pull/39) | Filters to slow, because, they were applied at the result set |
