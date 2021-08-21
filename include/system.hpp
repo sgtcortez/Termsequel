@@ -71,7 +71,7 @@ namespace Termsequel {
          static std::vector<std::string *> * execute(Command *command);
    };
 
-};
+}
 
 
 #endif

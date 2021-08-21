@@ -29,10 +29,11 @@ int main (
     char **argv
 ) {
 
-    int option;
-    char *binary_name = argv[0];
+   char *binary_name = argv[0];
 
 #ifdef __linux__
+
+   int option;
 
     while ( (option = getopt(argc, argv, short_options)) != -1 ) {
 

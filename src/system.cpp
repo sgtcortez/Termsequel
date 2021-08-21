@@ -61,8 +61,6 @@ constexpr static const char FILE_SEPARATOR = '\\';
 
 #endif
 
-#define DEBUG_SYSTEM 1
-
 #include "system.hpp"
 
 #ifdef DEBUG
@@ -115,10 +113,10 @@ union Comparasion {
 static std::vector<struct StatResult *> *
 get_directory_information(std::string name,
                           Termsequel::ConditionList *conditions,
-                          std::uint64_t current_level);
+                          std::uint16_t current_level);
 static std::vector<struct StatResult *> *
 get_information(std::string name, Termsequel::ConditionList *conditions,
-                std::uint64_t current_level);
+                std::uint16_t current_level);
 
 // Checks if the value should return to the user
 static bool should_return(struct StatResult *row,
@@ -127,7 +125,7 @@ static bool should_return(struct StatResult *row,
 // Checks if the shoud enter the directory
 // Checks only for the level condition
 static bool
-should_go_recursive(std::int32_t current_level,
+should_go_recursive(std::uint16_t current_level,
                     struct Termsequel::ConditionList *condition_list);
 
 
@@ -293,11 +291,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
   }
   delete stat_array;
   return rows;
-};
+}
 
 static std::vector<struct StatResult *> *
 get_information(std::string name, Termsequel::ConditionList *conditions,
-                std::uint64_t current_level) {
+                std::uint16_t current_level) {
   // check if file is directory, if so, iterate over directory(might go
   // recursively) otherwise, just return information about the specific file
   stat_buffer_t stat_buffer;
@@ -342,6 +340,7 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
   switch (stat_buffer.st_mode & FILE_TYPE_MASK) {
   case REGULAR_FLAG:
     stat_value->file_type = "REGULAR";
+    break;
   case CHARACTER_FLAG:
     stat_value->file_type = "CHARACTER";
     break;
@@ -378,7 +377,7 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
 static std::vector<struct StatResult *> *
 get_directory_information(std::string name,
                           Termsequel::ConditionList *conditions,
-                          std::uint64_t current_level) {
+                          std::uint16_t current_level) {
 
 #ifdef __linux__
 
@@ -476,9 +475,9 @@ static bool should_return(struct StatResult *row,
     // There is a need to use c style loops, because we need to get the logical
     // operator based on the current index
     for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
-      bool current;
+      bool current = false;
       const auto condition = condition_list->conditions[index];
-      union Comparasion compare_value;
+      union Comparasion compare_value = {0};
       bool compare_string = true;
       switch (condition->column) {
       case Termsequel::COLUMN_TYPE::FILENAME:
@@ -631,7 +630,7 @@ static bool should_return(struct StatResult *row,
 }
 
 static bool
-should_go_recursive(std::int32_t current_level,
+should_go_recursive(std::uint16_t current_level,
                     struct Termsequel::ConditionList *condition_list) {
   if (!condition_list)
     return true;

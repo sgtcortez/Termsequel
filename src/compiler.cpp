@@ -202,7 +202,7 @@ namespace Termsequel {
    class Lexical {
       private:
          std::string raw_input;
-         std::uint32_t current_index;
+         std::uint64_t current_index;
 
          Lexeme * parse_lexeme (const std::string string) {
             if (string.compare("SELECT") == 0 ) {
@@ -352,7 +352,7 @@ void Termsequel::Compiler::execute() {
       auto system_command = Command();
       bool has_conditions = false;
 
-      struct Condition *current_condition;
+      struct Condition *current_condition = nullptr;
 
       for (const auto lexeme: lexemes) {
 
