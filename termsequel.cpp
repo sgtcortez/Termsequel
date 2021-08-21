@@ -15,7 +15,7 @@
 #include "include/compiler.hpp"
 
 
-static constexpr const char *VERSION = "0.1";
+static constexpr const char *VERSION = "1.0";
 
 using namespace Termsequel;
 
@@ -82,9 +82,16 @@ void show_help(
         "\nOptions:"
         "\n -h Show this help."
         "\nColumns available:"
-        "\n NAME  Filename"
-        "\n SIZE  Filesize"
-        "\n OWNER File owner"
+        "\n NAME               Filename"
+        "\n SIZE               Filesize"
+        "\n OWNER              File owner"
+        "\n FILE_TYPE          Filetype"
+        "\n LEVEL              Depth level"
+        "\n OWNER_PERMISSIONS  Owner permissions"
+#ifdef __linux__
+        "\n GROUP_PERMISSIONS  Group permissions"
+        "\n OTHERS_PERMISSIONS Others permissions"
+#endif
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
         "\nVersion: %s."

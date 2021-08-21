@@ -1,11 +1,11 @@
 # Changelog
 Contains information about the versions of Termsequel
 
-- Release 0.1
+- Release 1.0
 
     - Information
 
-        No release date definition yet.  
+        Released at: 2021-08-21.  
         We use Cmake as the build tool.
 
     + Developers

@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(termsequel VERSION 0.1)
+project(termsequel VERSION 1.0)
 
 set(
     SOURCES
