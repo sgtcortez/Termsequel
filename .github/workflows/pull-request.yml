@@ -1,9 +1,9 @@
-name: CMake
+---
+name: "pull-request"
 
 on:
+  # When a pull request is made to any branch, run this.
   pull_request:
-    branches:
-      - main
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -31,3 +31,6 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+
+
