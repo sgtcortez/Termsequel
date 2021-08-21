@@ -3,6 +3,7 @@
 - [Examples](#Examples)
     - [Basic](#Basic)
     - [Advanced](#Advanced)
+    
 # Termsequel
 Bringing SQL to our filesystem.      
 Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.  
