@@ -2,7 +2,9 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(termsequel VERSION 1.0)
+project(termsequel VERSION 1.0.0)
+
+configure_file(termsequel.hpp.in termsequel.hpp)
 
 set(
     SOURCES
@@ -15,6 +17,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(
     ${PROJECT_NAME}
+    PUBLIC ${PROJECT_BINARY_DIR} # CMake will put the termsequel.hpp file here
     PRIVATE ${PROJECT_SOURCE_DIR}/include
 )
 

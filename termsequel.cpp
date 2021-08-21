@@ -7,15 +7,14 @@
 
 #ifdef __linux__
    #include <unistd.h>
-   static constexpr const char *short_options = "h";
+   static constexpr const char *short_options = "hv";
 
 #elif defined (_WIN32)
 #endif
 
 #include "include/compiler.hpp"
+#include "termsequel.hpp"
 
-
-static constexpr const char *VERSION = "1.0";
 
 using namespace Termsequel;
 
@@ -42,6 +41,7 @@ int main (
                 // show help and exits
                 show_help(binary_name, stdout);
                 return 0;
+
         }
     }
 
@@ -94,7 +94,12 @@ void show_help(
 #endif
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
-        "\nVersion: %s."
-        "\nCompiled at: %s:%s\n";
-    fprintf(stream, message.c_str(), filename, VERSION, __DATE__, __TIME__);
+         "\nCompiled at: %s:%s"
+#if defined(TERMSEQUEL_VERSION_PATCH) && (TERMSEQUEL_VERSION_PATCH > 0)
+         "\nVersion: %d.%d.%d\n";
+         fprintf(stream, message.c_str(), filename,  __DATE__, __TIME__, TERMSEQUEL_VERSION_MAJOR, TERMSEQUEL_VERSION_MINOR, TERMSEQUEL_VERSION_PATCH);
+#else
+         "\nVersion: %d.%d\n";
+         fprintf(stream, message.c_str(), filename, __DATE__, __TIME__, TERMSEQUEL_VERSION_MAJOR, TERMSEQUEL_VERSION_MINOR );
+#endif
 }

@@ -1,0 +1,5 @@
+//https://cmake.org/cmake/help/v3.21/guide/tutorial/A%20Basic%20Starting%20Point.html
+
+#define TERMSEQUEL_VERSION_MAJOR @termsequel_VERSION_MAJOR@
+#define TERMSEQUEL_VERSION_MINOR @termsequel_VERSION_MINOR@
+#define TERMSEQUEL_VERSION_PATCH @termsequel_VERSION_PATCH@
