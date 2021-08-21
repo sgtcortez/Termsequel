@@ -14,6 +14,7 @@
 
 #include <dirent.h>
 #include <unistd.h>
+#include <pwd.h>     // getpwuid
 
 #define STAT stat
 
@@ -457,25 +458,9 @@ get_directory_information(std::string name,
 
 static std::string get_owner_name(uid_t owner) {
 
-  constexpr std::uint32_t buffer_size = 30;
-  char buffer[buffer_size];
-  std::string output;
-
-  std::snprintf(buffer, buffer_size, "id --name --user %d", owner);
-
-  FILE *file = popen(buffer, "r");
-  if (file) {
-    output.reserve(buffer_size);
-    std::fread(buffer, sizeof(buffer), buffer_size - 1, file);
-    output.append(buffer);
-
-    // id returns a new line. We must remove it.
-    output.erase(output.find_first_of("\n"));
-    pclose(file);
-    return output;
-  }
-  output.append("Could not get owner ...");
-  return output;
+   struct passwd *user = getpwuid(owner);
+   std::string result = user->pw_name;
+   return result;
 }
 #endif
 
