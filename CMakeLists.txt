@@ -23,13 +23,18 @@ if(MSVC)
         ${PROJECT_NAME}
         PRIVATE /W4 /WX
     )
+    set_target_properties(
+        ${PROJECT_NAME}
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}/executable
+    )
 else ()
     target_compile_options(
         ${PROJECT_NAME}
         PRIVATE -Wall -Werror -Wextra
     )
+    set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/executable)
 endif()
-
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
