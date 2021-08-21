@@ -1,11 +1,6 @@
 # Summary
 - [Termsequel](#Termsequel)    
     - [What is](#What-is)    
-    - [Dependencies](#Dependencies)
-    - [Goals](#Goals)
-        + [Personal](#Personal)
-        + [Project](#Project)
-    - [Installation](#Installation)
 - [Users](#Users)
     + [Features](#Features)
         + [Columns](#Columns)
@@ -23,47 +18,6 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel)
 - ## What is
 
     Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.  
-
-- ## Dependencies
-
-    To execute the binary, you will need just one dependency! A implementation of the [C++ standard library](https://en.wikipedia.org/wiki/C%2B%2B_Standard_Library).   
-    **Note:** The implementation might be installed by default in your operating system. If you are on an embedded system, you may install it by yourself.
-
-    If you want to compile, then, you will need a C++ compiler. I suggest [**clang**](https://clang.llvm.org/)!
-
-- ## Goals
-
-    What are my goals and **Termsequel** goals?
-
-    + ### Personal
-
-        For me, I always wanted to learn C++ and Compilers. Well, at least the concepts of both.  
-        And, I always wanted to have some project that really helps me on my daily routines, and **Termsequel** helps me. Because, it really helps me, I decided to make it open source, and try to help someone else(This is the objective of an Open Source Project, right? :grimacing: ).  
-
-        I have never learned the [find](https://www.man7.org/linux/man-pages/man1/find.1.html) command very well, and I believe that it has a lot of information and does a lot of things(but is very useful).  
-
-        I am not building **Termsequel** to be a replacement of **find**, not this, but, an alternative tool that is more user friendly for easy and basic tasks, like, search for a *.exe* file in a directory.
-
-    + ### Project
-
-        **Termsequel** aims to help programmers, system administrators, hackers and even, non technical people who likes to learn new things.     
-        **Termsequel** aims to be the most easy(this is why, SQL is chosen) to people. Plataform independent(work in progress), no external dependencies(yes, I could use the [Boost](https://www.boost.org/)) because, first of all, I want to learn, and, there is no need for an external library. This project is simple(yet).
-
-- ## Installation
-
-    You will need [CMake](https://cmake.org/) and, one C++ compiler(clang, gcc, MSVC ...) to build the project!    
-    Just, create a directory called `build` and, then execute:   
-    ```shell
-    $ cd build
-    $ cmake ../
-    $ cmake --build .
-    ```
-    Since, this project is easy for CMake, it can detect the operating system and the available compiler.
-
-    **Obs:** If you are in linux, and, do not have CMake, but, you have make installed, then, you can simple run `make` at the project root:  
-    ```shell
-    $ make 
-    ```
 
 # Users
 Some advices to run **Termsequel**.   
