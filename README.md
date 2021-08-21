@@ -11,7 +11,7 @@ Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess)
 # Examples
 This section shows some examples of **termsequel** use ...
 
-Some useful information before:   
+Some useful information before:       
 | Item | Description | 
 | :-:  | :-:|
 | **.**    | Means the current working directory |
