@@ -49,6 +49,7 @@ Contains information about the versions of Termsequel
         | :-:   | :-: | :-: | :-: |    
         | Where conditions does not work well | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/76) | [PR](https://github.com/sgtcortez/Termsequel/pull/81) | When using three or more conditions, termsequel returns wrong results |
         
+
 - Release 1.1
 
     - Information
@@ -67,3 +68,5 @@ Contains information about the versions of Termsequel
 
         | Feature | Issue | Pull Request | Description |
         | :-:   | :-: | :-: | :-: |
+        | Add LAST_MODIFICATION column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/32) | [PR](https://github.com/sgtcortez/Termsequel/pull/47) | Add the last modification date of a file |
+

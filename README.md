@@ -121,6 +121,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
             Returns the permissions of other users.    
             The value, must be in octal mode!
 
+        + LAST_MODIFICATION
+
+            The datetime when the last modification ocurred.
+
     - ### SELECT
 
         The same syntax as a SQL database.    
