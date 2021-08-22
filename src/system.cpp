@@ -3,12 +3,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <sstream>
 #include <streambuf>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
+#include <time.h>
+#include <iostream>
 
 #ifdef __linux__
 
@@ -67,10 +70,6 @@ constexpr static const char FILE_SEPARATOR = '\\';
 #define DEBUG_SYSTEM 1
 #endif
 
-#ifdef DEBUG_SYSTEM
-#include <iostream>
-#endif
-
 // Stores the members that are useful to store
 // from stat result
 struct StatResult {
@@ -102,6 +101,9 @@ struct StatResult {
 
   // the type of the file
   std::string file_type;
+
+   // Last modification of the file
+  std::string last_modification;
 };
 
 union Comparasion {
@@ -156,6 +158,7 @@ Termsequel::System::execute(Termsequel::Command *command) {
   std::size_t bigger_owner = strlen("Owner");
   std::size_t bigger_level = strlen("Level");
   std::size_t bigger_file_type = strlen("File Type");
+  std::size_t bigger_last_modification = strlen("Last Modification");
 
   for (const auto stat_element : *stat_array) {
     for (const auto column : command->columns) {
@@ -185,6 +188,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
         if (stat_element->file_type.size() > bigger_file_type) {
           bigger_file_type = stat_element->file_type.size();
         }
+      }
+      if (column == COLUMN_TYPE::LAST_MODIFICATION) {
+         if ( stat_element->last_modification.size() > bigger_last_modification ) {
+            bigger_last_modification = stat_element->last_modification.size();
+         }
       }
     }
   }
@@ -229,6 +237,9 @@ Termsequel::System::execute(Termsequel::Command *command) {
       header->append(" Others Permissions");
     }
 #endif
+   if (column == COLUMN_TYPE::LAST_MODIFICATION) {
+      header->append(" Last Modification");
+   }
   }
   rows->push_back(header);
 
@@ -285,6 +296,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
         string->insert(string->end(), strlen("Others Permissions") - 3, ' ');
       }
 #endif
+      if (column == COLUMN_TYPE::LAST_MODIFICATION) {
+         string->push_back(' ');
+         string->append(stat_element->last_modification);
+         string->insert(string->end(), bigger_last_modification - stat_element->last_modification.size(), ' ');
+      }
     }
     rows->push_back(string);
     delete stat_element;
@@ -364,6 +380,24 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
    stat_value->permissions.others[2] = stat_buffer.st_mode & EXECUTE_PERMISSION_OTHERS ? 'X' : '-';
    stat_value->permissions.others[3] = '\0';
 #endif
+
+   // YYYY-MM-DD HH:MM:SS
+   char buffer[20];
+   
+#ifdef __linux
+   const auto local_time = localtime(&(stat_buffer.st_mtime));
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", local_time);
+#elif defined(_WIN32)
+   struct tm local_time;
+   errno_t error_number = localtime_s(&local_time, &(stat_buffer.st_mtime));
+   if (error_number != 0) {
+      // error here
+      std::cerr << "Could not get the locatime. Error Number: " << error_number << std::endl;
+   }
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", &local_time);
+#endif
+
+   stat_value->last_modification = buffer;
 
   auto vector = new std::vector<struct StatResult *>;
   if (should_return(stat_value, conditions)) {
@@ -508,6 +542,9 @@ static bool should_return(struct StatResult *row,
          compare_value.string_value = row->permissions.others;
          break;
 #endif
+      case Termsequel::COLUMN_TYPE::LAST_MODIFICATION:
+         compare_value.string_value = row->last_modification.c_str();
+         break;
       }
 
       switch (condition->operator_value) {
