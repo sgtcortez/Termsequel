@@ -25,6 +25,7 @@ namespace Termsequel {
       GROUP_PERMISSIONS, // permissions of the group
       OTHERS_PERMISSIONS, // permissions of others
 #endif
+      LAST_MODIFICATION,
    };
 
    enum class LogicalOperator {

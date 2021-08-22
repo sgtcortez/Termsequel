@@ -75,6 +75,7 @@ namespace Termsequel {
          static const Token GROUP_PERMISSIONS;
          static const Token OTHERS_PERMISSIONS;
 #endif
+         static const Token LAST_MODIFICATION;
          static const Token FROM;
          static const Token IDENTIFIER;
          static const Token WHERE;
@@ -145,6 +146,7 @@ namespace Termsequel {
    Token const Token::GROUP_PERMISSIONS  = (TokenType::TYPE_COLUMN);
    Token const Token::OTHERS_PERMISSIONS = (TokenType::TYPE_COLUMN);
 #endif
+   Token const Token::LAST_MODIFICATION  = (TokenType::TYPE_COLUMN);
    Token const Token::FROM               = (TokenType::TYPE_FROM);
    Token const Token::IDENTIFIER         = (TokenType::TYPE_IDENTIFIER);
    Token const Token::WHERE              = (TokenType::TYPE_WHERE);
@@ -251,6 +253,8 @@ namespace Termsequel {
             } else if ( string.compare("OTHERS_PERMISSIONS") == 0 ) {
                return new Lexeme (Token::OTHERS_PERMISSIONS);
 #endif
+            } else if ( string.compare("LAST_MODIFICATION") == 0) {
+               return new Lexeme (Token::LAST_MODIFICATION);
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -380,6 +384,8 @@ void Termsequel::Compiler::execute() {
             } else if (Token::OTHERS_PERMISSIONS == *(token) ) {
                system_command.columns.push_back(COLUMN_TYPE::OTHERS_PERMISSIONS);
 #endif
+            } else if (Token::LAST_MODIFICATION == *(token)) {
+               system_command.columns.push_back(COLUMN_TYPE::LAST_MODIFICATION);
             } else if ( Token::IDENTIFIER == *(token) ) {
                system_command.target = *(lexeme->value);
             } else if ( Token::WHERE == *(token) ) {
@@ -416,6 +422,9 @@ void Termsequel::Compiler::execute() {
                current_condition = new struct Condition;
                current_condition->column = COLUMN_TYPE::OTHERS_PERMISSIONS;
 #endif
+            } else if (Token::LAST_MODIFICATION == *(token)) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::LAST_MODIFICATION;
             } else if ( Token::EQUAL == *(token) ) {
                current_condition->operator_value = Operator::EQUAL;
             } else if ( Token::STARTS_WITH == *(token)) {
