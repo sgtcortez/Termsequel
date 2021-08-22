@@ -164,6 +164,12 @@ $ termsequel 'SELECT NAME FROM /HOME'
         -- Returns the files that the owner has the read and execute flag set.
         ```
 
+        It is possible to negate operators too!    
+        Actually, we are not negating operators, **Termsequel 1.1** introduced new operators(NOT_CONTAINS, NOT_STARTS_WITH and NOT_ENDS_WITH).   
+        For examples, you want to select all the files that do not end with `.txt`.   
+        ```sql
+        SELECT NAME FROM . WHERE NAME NOT_ENDS_WITH .txt
+        ```
 
 
 
