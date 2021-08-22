@@ -48,3 +48,22 @@ Contains information about the versions of Termsequel
         | Feature | Issue | Pull Request | Description |
         | :-:   | :-: | :-: | :-: |    
         | Where conditions does not work well | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/76) | [PR](https://github.com/sgtcortez/Termsequel/pull/81) | When using three or more conditions, termsequel returns wrong results |
+        
+- Release 1.1
+
+    - Information
+
+        Release date is undefined for now.
+
+    + Developers
+
+        Developers that helped with commits, tests, ideas.
+
+        * [sgtcortez](https://github.com/sgtcortez)
+
+    - Features
+
+        There is the list of features in this release.
+
+        | Feature | Issue | Pull Request | Description |
+        | :-:   | :-: | :-: | :-: |
