@@ -178,6 +178,13 @@ $ termsequel 'SELECT NAME FROM /HOME'
         This means:   
         > Return the name of the files whose ends with .cpp and has the size greater than 1000 bytes or ends with .txt
 
+        It is possible to negate operators too!    
+        Actually, we are not negating operators, **Termsequel 1.1** introduced new operators(NOT_CONTAINS, NOT_STARTS_WITH and NOT_ENDS_WITH).   
+        For examples, you want to select all the files that do not end with `.txt`.   
+        ```sql
+        SELECT NAME FROM . WHERE NAME NOT_ENDS_WITH .txt
+        ```
+
 # Developers
 There are sections for developers to be able to join this project.
 

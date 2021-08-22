@@ -580,6 +580,23 @@ static bool should_return(struct StatResult *row,
           current = false;
         }
         break;
+      case Termsequel::Operator::NOT_STARTS_WITH:
+        if (compare_string) {
+          if (condition->value.size() > strlen(compare_value.string_value)) {
+            current = false;
+          } else {
+            current = std::strncmp(
+               compare_value.string_value,
+               condition->value.c_str(),
+               condition->value.size()
+            ) != 0;
+          }
+        } else {
+          // tries to compare integer with starts with
+          // should throw invalid syntax, but, this will not be so easy
+          current = false;
+        }
+        break;
       case Termsequel::Operator::ENDS_WITH:
         if (compare_string) {
           if (condition->value.size() > strlen(compare_value.string_value)) {
@@ -596,6 +613,20 @@ static bool should_return(struct StatResult *row,
           current = false;
         }
         break;
+      case Termsequel::Operator::NOT_ENDS_WITH:
+        if (compare_string) {
+          if (condition->value.size() > strlen(compare_value.string_value)) {
+            current = false;
+          } else {
+            std::string tmp = compare_value.string_value;
+            current = tmp.compare(tmp.size() - condition->value.size(), condition->value.size(), condition->value) != 0;
+          }
+        } else {
+          // tries to compare integer with starts with
+          // should throw invalid syntax, but, this will not be so easy to do
+          current = false;
+        }
+        break;
       case Termsequel::Operator::CONTAINS:
         if (compare_string) {
           if (condition->value.size() > strlen(compare_value.string_value)) {
@@ -603,6 +634,19 @@ static bool should_return(struct StatResult *row,
           } else {
             current = std::strstr(compare_value.string_value,
                                   condition->value.c_str()) != nullptr;
+          }
+        } else {
+          // tries to compare integer with starts with
+          // should throw invalid syntax, but, this will not be so easy
+          current = false;
+        }
+        break;
+      case Termsequel::Operator::NOT_CONTAINS:
+        if (compare_string) {
+          if (condition->value.size() > strlen(compare_value.string_value)) {
+            current = false;
+          } else {
+            current = std::strstr(compare_value.string_value, condition->value.c_str()) == nullptr;
           }
         } else {
           // tries to compare integer with starts with
