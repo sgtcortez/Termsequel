@@ -83,8 +83,11 @@ namespace Termsequel {
          static const Token END;
          static const Token EQUAL;
          static const Token STARTS_WITH;
+         static const Token NOT_STARTS_WITH;
          static const Token ENDS_WITH;
+         static const Token NOT_ENDS_WITH;
          static const Token CONTAINS;
+         static const Token NOT_CONTAINS;
          static const Token BIGGER;
          static const Token LESS;
          static const Token BIGGER_OR_EQUAL;
@@ -154,12 +157,15 @@ namespace Termsequel {
    Token const Token::END                = (TokenType::TYPE_END);
    Token const Token::EQUAL              = (TokenType::TYPE_COMPARASION);
    Token const Token::STARTS_WITH        = (TokenType::TYPE_COMPARASION);
+   Token const Token::NOT_STARTS_WITH    = (TokenType::TYPE_COMPARASION);
    Token const Token::ENDS_WITH          = (TokenType::TYPE_COMPARASION);
+   Token const Token::NOT_ENDS_WITH      = (TokenType::TYPE_COMPARASION);
+   Token const Token::CONTAINS           = (TokenType::TYPE_COMPARASION);
+   Token const Token::NOT_CONTAINS       = (TokenType::TYPE_COMPARASION);
    Token const Token::BIGGER             = (TokenType::TYPE_COMPARASION);
    Token const Token::LESS               = (TokenType::TYPE_COMPARASION);
    Token const Token::BIGGER_OR_EQUAL    = (TokenType::TYPE_COMPARASION);
    Token const Token::LESS_OR_EQUAL      = (TokenType::TYPE_COMPARASION);
-   Token const Token::CONTAINS           = (TokenType::TYPE_COMPARASION);
    Token const Token::AND                = (TokenType::TYPE_LOGICAL);
    Token const Token::OR                 = (TokenType::TYPE_LOGICAL);
 
@@ -229,10 +235,16 @@ namespace Termsequel {
                return new Lexeme ( Token::OR );
             } else if ( string.compare("STARTS_WITH") == 0 ) {
                return new Lexeme (Token::STARTS_WITH);
+            } else if ( string.compare("NOT_STARTS_WITH") == 0 ) {
+               return new Lexeme (Token::NOT_STARTS_WITH);
             } else if ( string.compare("ENDS_WITH") == 0 ) {
                return new Lexeme( Token::ENDS_WITH);
+            } else if ( string.compare("NOT_ENDS_WITH") == 0 ) {
+               return new Lexeme( Token::NOT_ENDS_WITH);
             } else if ( string.compare("CONTAINS") == 0 ) {
                return new Lexeme (Token::CONTAINS);
+            } else if ( string.compare("NOT_CONTAINS") == 0 ) {
+               return new Lexeme (Token::NOT_CONTAINS);
             } else if ( string.compare(">") == 0) {
                return new Lexeme (Token::BIGGER);
             } else if ( string.compare("<") == 0 ) {
@@ -429,10 +441,16 @@ void Termsequel::Compiler::execute() {
                current_condition->operator_value = Operator::EQUAL;
             } else if ( Token::STARTS_WITH == *(token)) {
                current_condition->operator_value = Operator::STARTS_WITH;
+            } else if ( Token::NOT_STARTS_WITH == *(token)) {
+               current_condition->operator_value = Operator::NOT_STARTS_WITH;
             } else if ( Token::ENDS_WITH == *(token) ) {
                current_condition->operator_value = Operator::ENDS_WITH;
+            } else if ( Token::NOT_ENDS_WITH == *(token) ) {
+               current_condition->operator_value = Operator::NOT_ENDS_WITH;
             } else if (Token::CONTAINS == *(token)) {
                current_condition->operator_value = Operator::CONTAINS;
+            } else if (Token::NOT_CONTAINS == *(token)) {
+               current_condition->operator_value = Operator::NOT_CONTAINS;
             } else if (Token::BIGGER == *(token)) {
                current_condition->operator_value = Operator::BIGGER;
             } else if (Token::LESS == *(token)) {
