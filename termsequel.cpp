@@ -92,6 +92,7 @@ void show_help(
         "\n GROUP_PERMISSIONS  Group permissions"
         "\n OTHERS_PERMISSIONS Others permissions"
 #endif
+        "\n LAST_MODIFICATION  The last modification of the file"
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
          "\nCompiled at: %s:%s"

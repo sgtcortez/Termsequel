@@ -40,7 +40,7 @@ Contains information about the versions of Termsequel
         | Feature | Issue | Pull Request | Description |
         | :-:   | :-: | :-: | :-: |    
         | Equal operators consider only the user input string | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/56) | [PR](https://github.com/sgtcortez/Termsequel/pull/58) | The equal operation was not working as expected to be |
-        
+
 - Release 1.1
 
     - Information
@@ -59,3 +59,5 @@ Contains information about the versions of Termsequel
 
         | Feature | Issue | Pull Request | Description |
         | :-:   | :-: | :-: | :-: |
+        | Add LAST_MODIFICATION column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/32) | [PR](https://github.com/sgtcortez/Termsequel/pull/47) | Add the last modification date of a file |
+
