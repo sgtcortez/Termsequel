@@ -125,6 +125,16 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             The datetime when the last modification ocurred.
 
+        + STAR pseudo column
+
+            Use this, when you want to select all the available columns ...
+            For example:
+            ```sql
+            SELECT * FROM .
+            ```
+            Means, select "all" the columns from .   
+            **Note:** You can not use the **star** in the **WHERE** statement!
+
     - ### SELECT
 
         The same syntax as a SQL database.    

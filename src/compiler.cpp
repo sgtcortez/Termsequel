@@ -63,6 +63,7 @@ namespace Termsequel {
 
          // These are static instances
          static const Token SELECT;
+         static const Token STAR;
          static const Token NAME;
          static const Token SIZE;
          static const Token OWNER;
@@ -139,6 +140,7 @@ namespace Termsequel {
    // initializes the static instances.
    // There are no need to free this ...
    Token const Token::SELECT             = (TokenType::TYPE_COMMAND);
+   Token const Token::STAR              = (TokenType::TYPE_COLUMN);
    Token const Token::NAME               = (TokenType::TYPE_COLUMN);
    Token const Token::SIZE               = (TokenType::TYPE_COLUMN);
    Token const Token::OWNER              = (TokenType::TYPE_COLUMN);
@@ -215,6 +217,8 @@ namespace Termsequel {
          Lexeme * parse_lexeme (const std::string string) {
             if (string.compare("SELECT") == 0 ) {
                return new Lexeme( Token::SELECT);
+            } else if (string.compare("*") == 0) {
+               return new Lexeme(Token::STAR);
             } else if ( string.compare("NAME") == 0 ) {
                return new Lexeme( Token::NAME);
             } else if ( string.compare("SIZE") == 0 ) {
@@ -348,6 +352,15 @@ void Termsequel::Compiler::execute() {
          has_errors = true;
          break;
       }
+      if (found_where) {
+         if (Token::STAR == *(current->token)) {
+            std::cerr << "Invalid SYNTAX!" << std::endl;
+            std::cerr << "Near Tokens:" << *previous << " and " << *current << std::endl;
+            std::cerr << "The STAR pseudo column can be used only in resulting columns!" << std::endl;
+            has_errors = true;
+            break;
+         }
+      }
       if (Token::WHERE == *(current->token)) {
          if (found_where) {
             // error
@@ -404,6 +417,18 @@ void Termsequel::Compiler::execute() {
                has_conditions = true;
                // initializes the conditions
                system_command.conditions = new struct ConditionList;
+            } else if (Token::STAR == *(token)) {
+               system_command.columns.push_back(COLUMN_TYPE::FILENAME);
+               system_command.columns.push_back(COLUMN_TYPE::FILESIZE);
+               system_command.columns.push_back(COLUMN_TYPE::OWNER);
+               system_command.columns.push_back(COLUMN_TYPE::LEVEL);
+               system_command.columns.push_back(COLUMN_TYPE::FILE_TYPE);
+               system_command.columns.push_back(COLUMN_TYPE::OWNER_PERMISSIONS);
+#ifdef __linux__
+               system_command.columns.push_back(COLUMN_TYPE::GROUP_PERMISSIONS);
+               system_command.columns.push_back(COLUMN_TYPE::OTHERS_PERMISSIONS);
+#endif
+               system_command.columns.push_back(COLUMN_TYPE::LAST_MODIFICATION);
             }
          } else {
             // AFTER WHERE
