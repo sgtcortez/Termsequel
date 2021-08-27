@@ -62,3 +62,4 @@ Contains information about the versions of Termsequel
         | Add LAST_MODIFICATION column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/32) | [PR](https://github.com/sgtcortez/Termsequel/pull/47) | Add the last modification date of a file |
         | Support for negate expressions | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/40) | [PR]() | Add three new operators, to be used as the negate form |
         | Add support for start pseudo column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/51) | [PR](https://github.com/sgtcortez/Termsequel/pull/57) | Add support for the **\***(STAR) pseudo column. |
+        | Add RELATIVE_PATH column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/53) | [PR](https://github.com/sgtcortez/Termsequel/pull/60) | Added the relative path column |
