@@ -32,3 +32,11 @@ Contains information about the versions of Termsequel
         | Implement support for Windows | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/11) | [PR](https://github.com/sgtcortez/Termsequel/pull/44) | Now, termsequel is available on Windows systems |
         | Set CMake as the build tool | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/1) | [PR](https://github.com/sgtcortez/Termsequel/pull/45) | Using CMake, makes the development and the cross compile easy |
         | File permissions columns | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/12) | [PR](https://github.com/sgtcortez/Termsequel/pull/29) | Add support for file permissions columns |
+
+- Release 1.0.1
+
+    - Bug Fixes
+
+        | Feature | Issue | Pull Request | Description |
+        | :-:   | :-: | :-: | :-: |    
+        | Equal operators consider only the user input string | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/56) | [PR](https://github.com/sgtcortez/Termsequel/pull/58) | The equal operation was not working as expected to be |

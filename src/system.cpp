@@ -518,9 +518,7 @@ static bool should_return(struct StatResult *row,
           current = compare_value.integer_value == condition_value;
         } else {
           // compare string
-          current =
-              std::strncmp(compare_value.string_value, condition->value.c_str(),
-                           condition->value.size()) == 0;
+          current = std::strncmp(compare_value.string_value, condition->value.c_str(), strlen(compare_value.string_value)) == 0;
         }
         break;
       case Termsequel::Operator::STARTS_WITH:
