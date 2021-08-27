@@ -93,6 +93,7 @@ void show_help(
         "\n OTHERS_PERMISSIONS Others permissions"
 #endif
         "\n LAST_MODIFICATION  The last modification of the file"
+        "\n RELATIVE_PATH      The relative path of the file"
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
          "\nCompiled at: %s:%s"

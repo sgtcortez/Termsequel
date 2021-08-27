@@ -135,6 +135,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
             Means, select "all" the columns from .   
             **Note:** You can not use the **star** in the **WHERE** statement!
 
+        + RELATIVE_PATH
+
+            The relative path of the file.
+
     - ### SELECT
 
         The same syntax as a SQL database.    

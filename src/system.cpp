@@ -104,6 +104,9 @@ struct StatResult {
 
    // Last modification of the file
   std::string last_modification;
+
+   // the relative path of the file
+  std::string relative_path;
 };
 
 union Comparasion {
@@ -165,6 +168,7 @@ Termsequel::System::execute(Termsequel::Command *command) {
   std::size_t bigger_level = strlen("Level");
   std::size_t bigger_file_type = strlen("File Type");
   std::size_t bigger_last_modification = strlen("Last Modification");
+  std::size_t bigger_relative_path = strlen("Relative Path");
 
   for (const auto stat_element : *stat_array) {
     for (const auto column : command->columns) {
@@ -198,6 +202,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
       if (column == COLUMN_TYPE::LAST_MODIFICATION) {
          if ( stat_element->last_modification.size() > bigger_last_modification ) {
             bigger_last_modification = stat_element->last_modification.size();
+         }
+      }
+      if (column == COLUMN_TYPE::RELATIVE_PATH ) {
+         if ( stat_element->relative_path.size() > bigger_relative_path ) {
+            bigger_relative_path = stat_element->relative_path.size();
          }
       }
     }
@@ -246,6 +255,10 @@ Termsequel::System::execute(Termsequel::Command *command) {
    if (column == COLUMN_TYPE::LAST_MODIFICATION) {
       header->append(" Last Modification");
        header->insert(header->end(), bigger_last_modification - strlen("Last Modification"), ' ');
+   }
+   if ( column == COLUMN_TYPE::RELATIVE_PATH ) {
+      header->append(" Relative Path");
+      header->insert(header->end(), bigger_relative_path - strlen("Relative Path"), ' ');
    }
   }
   rows->push_back(header);
@@ -307,6 +320,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
          string->push_back(' ');
          string->append(stat_element->last_modification);
          string->insert(string->end(), bigger_last_modification - stat_element->last_modification.size(), ' ');
+      }
+      if (column == COLUMN_TYPE::RELATIVE_PATH) {
+         string->push_back(' ');
+         string->append(stat_element->relative_path);
+         string->insert(string->end(), bigger_relative_path - stat_element->relative_path.size(), ' ');
       }
     }
     rows->push_back(string);
@@ -405,6 +423,7 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
 #endif
 
    stat_value->last_modification = buffer;
+   stat_value->relative_path = name;
 
   auto vector = new std::vector<struct StatResult *>;
   if (should_return(stat_value, conditions)) {
@@ -551,6 +570,9 @@ static bool should_return(struct StatResult *row,
 #endif
       case Termsequel::COLUMN_TYPE::LAST_MODIFICATION:
          compare_value.string_value = row->last_modification.c_str();
+         break;
+      case Termsequel::COLUMN_TYPE::RELATIVE_PATH:
+         compare_value.string_value = row->relative_path.c_str();
          break;
       }
 
