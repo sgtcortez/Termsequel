@@ -26,6 +26,7 @@ namespace Termsequel {
       OTHERS_PERMISSIONS, // permissions of others
 #endif
       LAST_MODIFICATION,
+      RELATIVE_PATH, // The relative path of the file
    };
 
    enum class LogicalOperator {
