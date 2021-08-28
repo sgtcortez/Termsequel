@@ -94,6 +94,7 @@ void show_help(
 #endif
         "\n LAST_MODIFICATION  The last modification of the file"
         "\n RELATIVE_PATH      The relative path of the file"
+        "\n ABSOLUTE_PATH      The absolute path of the file"
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
          "\nCompiled at: %s:%s"

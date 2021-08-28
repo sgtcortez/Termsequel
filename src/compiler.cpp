@@ -78,6 +78,7 @@ namespace Termsequel {
 #endif
          static const Token LAST_MODIFICATION;
          static const Token RELATIVE_PATH;
+         static const Token ABSOLUTE_PATH;
          static const Token FROM;
          static const Token IDENTIFIER;
          static const Token WHERE;
@@ -154,6 +155,7 @@ namespace Termsequel {
 #endif
    Token const Token::LAST_MODIFICATION  = (TokenType::TYPE_COLUMN);
    Token const Token::RELATIVE_PATH      = (TokenType::TYPE_COLUMN);
+   Token const Token::ABSOLUTE_PATH      = (TokenType::TYPE_COLUMN);
    Token const Token::FROM               = (TokenType::TYPE_FROM);
    Token const Token::IDENTIFIER         = (TokenType::TYPE_IDENTIFIER);
    Token const Token::WHERE              = (TokenType::TYPE_WHERE);
@@ -275,6 +277,8 @@ namespace Termsequel {
                return new Lexeme (Token::LAST_MODIFICATION);
             } else if (string.compare("RELATIVE_PATH") == 0) {
                return new Lexeme (Token::RELATIVE_PATH);
+            } else if (string.compare("ABSOLUTE_PATH") == 0) {
+               return new Lexeme (Token::ABSOLUTE_PATH);
             } else {
                // anything else is an identifier
                return new Lexeme( Token::IDENTIFIER, string);
@@ -417,6 +421,8 @@ void Termsequel::Compiler::execute() {
                system_command.columns.push_back(COLUMN_TYPE::LAST_MODIFICATION);
             } else if (Token::RELATIVE_PATH == *(token)) {
                system_command.columns.push_back(COLUMN_TYPE::RELATIVE_PATH);
+            } else if (Token::ABSOLUTE_PATH == *(token)) {
+               system_command.columns.push_back(COLUMN_TYPE::ABSOLUTE_PATH);
             } else if ( Token::IDENTIFIER == *(token) ) {
                system_command.target = *(lexeme->value);
             } else if ( Token::WHERE == *(token) ) {
@@ -436,6 +442,7 @@ void Termsequel::Compiler::execute() {
 #endif
                system_command.columns.push_back(COLUMN_TYPE::LAST_MODIFICATION);
                system_command.columns.push_back(COLUMN_TYPE::RELATIVE_PATH);
+               system_command.columns.push_back(COLUMN_TYPE::ABSOLUTE_PATH);
             }
          } else {
             // AFTER WHERE
@@ -469,6 +476,9 @@ void Termsequel::Compiler::execute() {
             } else if (Token::LAST_MODIFICATION == *(token)) {
                current_condition = new struct Condition;
                current_condition->column = COLUMN_TYPE::LAST_MODIFICATION;
+            } else if (Token::ABSOLUTE_PATH == *(token)) {
+               current_condition = new struct Condition;
+               current_condition->column = COLUMN_TYPE::ABSOLUTE_PATH;
             } else if (Token::RELATIVE_PATH == *(token)) {
                current_condition = new struct Condition;
                current_condition->column = COLUMN_TYPE::RELATIVE_PATH;

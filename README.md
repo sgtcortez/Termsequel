@@ -139,6 +139,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             The relative path of the file.
 
+        + ABSOLUTE_PATH
+
+            The absolute path of the file.
+
     - ### SELECT
 
         The same syntax as a SQL database.    
