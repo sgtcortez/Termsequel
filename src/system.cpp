@@ -1,3 +1,8 @@
+#ifdef _WIN32
+   // Should we really do this?
+   #undef UNICODE
+#endif
+
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -46,6 +51,7 @@ constexpr static const char FILE_SEPARATOR = '/';
 #elif defined(_WIN32)
 
 #include <io.h> // _findfirst _findnext
+#include <windows.h>  // GetFullPathName
 
 #define STAT _stat
 
@@ -65,6 +71,8 @@ constexpr static const char FILE_SEPARATOR = '\\';
 #endif
 
 #include "system.hpp"
+
+#define BUFFER_SIZE 1024 * 4 // 4 KiB
 
 #ifdef DEBUG
 #define DEBUG_SYSTEM 1
@@ -107,6 +115,9 @@ struct StatResult {
 
    // the relative path of the file
   std::string relative_path;
+
+   // The absolute path of the file
+   std::string absolute_path;
 };
 
 union Comparasion {
@@ -163,6 +174,7 @@ Termsequel::System::execute(Termsequel::Command *command) {
   std::size_t bigger_file_type = strlen("File Type");
   std::size_t bigger_last_modification = strlen("Last Modification");
   std::size_t bigger_relative_path = strlen("Relative Path");
+  std::size_t bigger_absolute_path = strlen("Absolute Path");
 
   for (const auto stat_element : *stat_array) {
     for (const auto column : command->columns) {
@@ -201,6 +213,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
       if (column == COLUMN_TYPE::RELATIVE_PATH ) {
          if ( stat_element->relative_path.size() > bigger_relative_path ) {
             bigger_relative_path = stat_element->relative_path.size();
+         }
+      }
+      if (column == COLUMN_TYPE::ABSOLUTE_PATH) {
+         if (stat_element->absolute_path.size() > bigger_absolute_path) {
+            bigger_absolute_path = stat_element->absolute_path.size();
          }
       }
     }
@@ -253,6 +270,10 @@ Termsequel::System::execute(Termsequel::Command *command) {
    if ( column == COLUMN_TYPE::RELATIVE_PATH ) {
       header->append(" Relative Path");
       header->insert(header->end(), bigger_relative_path - strlen("Relative Path"), ' ');
+   }
+   if (column == COLUMN_TYPE::ABSOLUTE_PATH) {
+      header->append(" Absolute Path");
+      header->insert(header->end(), bigger_absolute_path - strlen("Absolute Path"), ' ');
    }
   }
   rows->push_back(header);
@@ -319,6 +340,11 @@ Termsequel::System::execute(Termsequel::Command *command) {
          string->push_back(' ');
          string->append(stat_element->relative_path);
          string->insert(string->end(), bigger_relative_path - stat_element->relative_path.size(), ' ');
+      }
+      if (column == COLUMN_TYPE::ABSOLUTE_PATH) {
+         string->push_back(' ');
+         string->append(stat_element->absolute_path);
+         string->insert(string->end(), bigger_absolute_path - stat_element->absolute_path.size(), ' ');
       }
     }
     rows->push_back(string);
@@ -404,6 +430,7 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
    char buffer[20];
 
 #ifdef __linux
+
    const auto local_time = localtime(&(stat_buffer.st_mtime));
    std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", local_time);
 #elif defined(_WIN32)
@@ -418,6 +445,35 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
 
    stat_value->last_modification = buffer;
    stat_value->relative_path = name;
+
+#ifdef __linux__
+
+   char absolute_path_buffer[BUFFER_SIZE] = {0};
+   if ( (realpath(name.c_str(), absolute_path_buffer)) == nullptr) {
+      std::cerr << "Could not get the real path from file: " << name << std::endl;
+   } else {
+      stat_value->absolute_path = absolute_path_buffer;
+   }
+
+#elif defined (_WIN32)
+
+   char absolute_path_buffer[BUFFER_SIZE] = {0};
+
+   DWORD return_code = GetFullPathName(
+      name.c_str(),
+      BUFFER_SIZE,
+      absolute_path_buffer,
+      NULL
+   );
+   if (return_code == 0) {
+      std::cerr << "Could not the the real path from file: " << name << std::endl;
+   } else {
+      stat_value->absolute_path = absolute_path_buffer;
+   }
+
+#endif
+
+
 
   auto vector = new std::vector<struct StatResult *>;
   if (should_return(stat_value, conditions)) {
@@ -567,6 +623,9 @@ static bool should_return(struct StatResult *row,
          break;
       case Termsequel::COLUMN_TYPE::RELATIVE_PATH:
          compare_value.string_value = row->relative_path.c_str();
+         break;
+      case Termsequel::COLUMN_TYPE::ABSOLUTE_PATH:
+         compare_value.string_value = row->absolute_path.c_str();
          break;
       }
 
