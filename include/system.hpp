@@ -58,12 +58,11 @@ namespace Termsequel {
    struct ConditionList {
       std::vector<Condition*> conditions;
       std::vector<LogicalOperator> operators;
-
    };
 
 
    // Represents an execution command
-   struct Command {
+   struct SystemCommand {
       COMMAND_TYPE command;             // the command to be executed
       std::vector<COLUMN_TYPE> columns; // the columns to be retrieved
       std::string target;               // the target file/directory
@@ -74,7 +73,7 @@ namespace Termsequel {
       public:
 
          // Executes the command, and return the list of elements
-         static std::vector<std::string *> * execute(Command *command);
+         static void execute(const SystemCommand *command);
    };
 
 }
