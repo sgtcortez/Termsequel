@@ -10,6 +10,9 @@ set(
     SOURCES
     src/system.cpp
     src/compiler.cpp
+    src/lexeme.cpp
+    src/lexical.cpp
+    src/syntax.cpp
     termsequel.cpp
 )
 

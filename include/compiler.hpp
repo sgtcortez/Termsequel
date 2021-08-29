@@ -11,16 +11,17 @@
 
 
 #include <string>
+
 #include "system.hpp"
 
 namespace Termsequel {
 
-   class Compiler {
+   class Compiler final {
       private:
          std::string raw_input;
       public:
          Compiler(std::string raw_input);
-         void execute();
+         SystemCommand * compile() const;
    };
 
 
