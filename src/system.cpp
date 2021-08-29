@@ -72,6 +72,7 @@ constexpr static const char FILE_SEPARATOR = '\\';
 
 #include "system.hpp"
 
+
 #define BUFFER_SIZE 1024 * 4 // 4 KiB
 
 #ifdef DEBUG
@@ -126,23 +127,30 @@ union Comparasion {
 };
 
 // Returns the information about a directory and all its subdirectories/files
-static std::vector<struct StatResult *> *
-get_directory_information(std::string name,
-                          Termsequel::ConditionList *conditions,
-                          std::uint16_t current_level);
-static std::vector<struct StatResult *> *
-get_information(std::string name, Termsequel::ConditionList *conditions,
-                std::uint16_t current_level);
+static std::vector<struct StatResult *> * get_directory_information(
+   std::string name,
+   Termsequel::ConditionList *conditions,
+   std::uint16_t current_level
+);
+
+static std::vector<struct StatResult *> * get_information(
+   std::string name,
+   Termsequel::ConditionList *conditions,
+   std::uint16_t current_level
+);
 
 // Checks if the value should return to the user
-static bool should_return(struct StatResult *row,
-                          struct Termsequel::ConditionList *condition_list);
+static bool should_return(
+   struct StatResult *row,
+   struct Termsequel::ConditionList *condition_list
+);
 
 // Checks if the shoud enter the directory
 // Checks only for the level condition
-static bool
-should_go_recursive(std::uint16_t current_level,
-                    struct Termsequel::ConditionList *condition_list);
+static bool should_go_recursive(
+   std::uint16_t current_level,
+   struct Termsequel::ConditionList *condition_list
+);
 
 
 #ifdef __linux__
@@ -155,15 +163,9 @@ static std::string get_owner_name(uid_t owner);
 
 #endif
 
-std::vector<std::string *> *
-Termsequel::System::execute(Termsequel::Command *command) {
+void Termsequel::System::execute(const Termsequel::SystemCommand *command) {
 
-  const auto stat_array =
-      get_information(command->target, command->conditions, 0);
-
-  // convert the raw input from stat to a beautiful input, considering user
-  // column order
-  const auto rows = new std::vector<std::string *>;
+  const auto stat_array = get_information(command->target, command->conditions, 0);
 
   // output rule. Values must be padded
   // Starts with the default column name
@@ -229,134 +231,129 @@ Termsequel::System::execute(Termsequel::Command *command) {
   // name       10
   // name220  | 100
 
-  auto header = new std::string;
-  for (const auto column : command->columns) {
-    if (column == COLUMN_TYPE::FILENAME) {
-      header->append(" Filename");
-      header->insert(header->end(), bigger_filename - strlen("Filename"), ' ');
-    }
-    if (column == COLUMN_TYPE::FILESIZE) {
-      header->append(" Size");
-      header->insert(header->end(), bigger_column - strlen("Size"), ' ');
-    }
-    if (column == COLUMN_TYPE::OWNER) {
-      header->append(" Owner");
-      header->insert(header->end(), bigger_owner - strlen("Owner"), ' ');
-    }
-    if (column == COLUMN_TYPE::LEVEL) {
-      header->append(" Level");
-      header->insert(header->end(), bigger_level - strlen("Level"), ' ');
-    }
-    if (column == COLUMN_TYPE::FILE_TYPE) {
-      header->append(" File Type");
-      header->insert(header->end(), bigger_file_type - strlen("File Type"),
-                     ' ');
-    }
-    if (column == COLUMN_TYPE::OWNER_PERMISSIONS) {
-      header->append(" Owner Permissions");
-    }
-#ifdef __linux__
-    if (column == COLUMN_TYPE::GROUP_PERMISSIONS) {
-      header->append(" Group Permissions");
-    }
-    if (column == COLUMN_TYPE::OTHERS_PERMISSIONS) {
-      header->append(" Others Permissions");
-    }
-#endif
-   if (column == COLUMN_TYPE::LAST_MODIFICATION) {
-      header->append(" Last Modification");
-       header->insert(header->end(), bigger_last_modification - strlen("Last Modification"), ' ');
-   }
-   if ( column == COLUMN_TYPE::RELATIVE_PATH ) {
-      header->append(" Relative Path");
-      header->insert(header->end(), bigger_relative_path - strlen("Relative Path"), ' ');
-   }
-   if (column == COLUMN_TYPE::ABSOLUTE_PATH) {
-      header->append(" Absolute Path");
-      header->insert(header->end(), bigger_absolute_path - strlen("Absolute Path"), ' ');
-   }
-  }
-  rows->push_back(header);
-
-  // Should use MOVE
-  header = nullptr;
-
-  for (const auto stat_element : *stat_array) {
-    auto string = new std::string;
-    for (const auto column : command->columns) {
+   std::string header;
+   for (const auto column : command->columns) {
       if (column == COLUMN_TYPE::FILENAME) {
-        string->push_back(' ');
-        string->append(stat_element->filename);
-        string->insert(string->end(),
-                       bigger_filename - stat_element->filename.size(), ' ');
+         header.append(" Filename");
+         header.insert(header.end(), bigger_filename - strlen("Filename"), ' ');
       }
       if (column == COLUMN_TYPE::FILESIZE) {
-        std::string column_value = std::to_string(stat_element->size);
-        string->push_back(' ');
-        string->append(column_value);
-        string->insert(string->end(), bigger_column - column_value.size(), ' ');
+         header.append(" Size");
+         header.insert(header.end(), bigger_column - strlen("Size"), ' ');
       }
       if (column == COLUMN_TYPE::OWNER) {
-        string->push_back(' ');
-        string->append(stat_element->owner);
-        string->insert(string->end(), bigger_owner - stat_element->owner.size(),
-                       ' ');
+         header.append(" Owner");
+         header.insert(header.end(), bigger_owner - strlen("Owner"), ' ');
       }
       if (column == COLUMN_TYPE::LEVEL) {
-        std::string column_value = std::to_string(stat_element->level);
-        string->push_back(' ');
-        string->append(column_value);
-        string->insert(string->end(), bigger_column - column_value.size(), ' ');
+         header.append(" Level");
+         header.insert(header.end(), bigger_level - strlen("Level"), ' ');
       }
       if (column == COLUMN_TYPE::FILE_TYPE) {
-        string->push_back(' ');
-        string->append(stat_element->file_type);
-        string->insert(string->end(),
-                       bigger_file_type - stat_element->file_type.size(), ' ');
+         header.append(" File Type");
+         header.insert(header.end(), bigger_file_type - strlen("File Type"), ' ');
       }
       if (column == COLUMN_TYPE::OWNER_PERMISSIONS) {
-        string->push_back(' ');
-        string->append(stat_element->permissions.owner);
-        string->insert(string->end(), strlen("Owner Permissions") - 3, ' ');
+         header.append(" Owner Permissions");
       }
 #ifdef __linux__
       if (column == COLUMN_TYPE::GROUP_PERMISSIONS) {
-        string->push_back(' ');
-        string->append(stat_element->permissions.group);
-        string->insert(string->end(), strlen("Group Permissions") - 3, ' ');
+         header.append(" Group Permissions");
       }
       if (column == COLUMN_TYPE::OTHERS_PERMISSIONS) {
-        string->push_back(' ');
-        string->append(stat_element->permissions.others);
-        string->insert(string->end(), strlen("Others Permissions") - 3, ' ');
+         header.append(" Others Permissions");
       }
 #endif
       if (column == COLUMN_TYPE::LAST_MODIFICATION) {
-         string->push_back(' ');
-         string->append(stat_element->last_modification);
-         string->insert(string->end(), bigger_last_modification - stat_element->last_modification.size(), ' ');
+         header.append(" Last Modification");
+         header.insert(header.end(), bigger_last_modification - strlen("Last Modification"), ' ');
       }
-      if (column == COLUMN_TYPE::RELATIVE_PATH) {
-         string->push_back(' ');
-         string->append(stat_element->relative_path);
-         string->insert(string->end(), bigger_relative_path - stat_element->relative_path.size(), ' ');
+      if ( column == COLUMN_TYPE::RELATIVE_PATH ) {
+         header.append(" Relative Path");
+         header.insert(header.end(), bigger_relative_path - strlen("Relative Path"), ' ');
       }
       if (column == COLUMN_TYPE::ABSOLUTE_PATH) {
-         string->push_back(' ');
-         string->append(stat_element->absolute_path);
-         string->insert(string->end(), bigger_absolute_path - stat_element->absolute_path.size(), ' ');
+         header.append(" Absolute Path");
+         header.insert(header.end(), bigger_absolute_path - strlen("Absolute Path"), ' ');
       }
-    }
-    rows->push_back(string);
-    delete stat_element;
-  }
-  delete stat_array;
-  return rows;
+   }
+   std::cout << header << std::endl;
+
+   for (const auto stat_element : *stat_array) {
+      std::string string;
+      for (const auto column : command->columns) {
+         if (column == COLUMN_TYPE::FILENAME) {
+            string.push_back(' ');
+            string.append(stat_element->filename);
+            string.insert(string.end(), bigger_filename - stat_element->filename.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::FILESIZE) {
+            std::string column_value = std::to_string(stat_element->size);
+            string.push_back(' ');
+            string.append(column_value);
+            string.insert(string.end(), bigger_column - column_value.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::OWNER) {
+            string.push_back(' ');
+            string.append(stat_element->owner);
+            string.insert(string.end(), bigger_owner - stat_element->owner.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::LEVEL) {
+            std::string column_value = std::to_string(stat_element->level);
+            string.push_back(' ');
+            string.append(column_value);
+            string.insert(string.end(), bigger_column - column_value.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::FILE_TYPE) {
+            string.push_back(' ');
+            string.append(stat_element->file_type);
+            string.insert(string.end(), bigger_file_type - stat_element->file_type.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::OWNER_PERMISSIONS) {
+            string.push_back(' ');
+            string.append(stat_element->permissions.owner);
+            string.insert(string.end(), strlen("Owner Permissions") - 3, ' ');
+         }
+#ifdef __linux__
+         if (column == COLUMN_TYPE::GROUP_PERMISSIONS) {
+            string.push_back(' ');
+            string.append(stat_element->permissions.group);
+            string.insert(string.end(), strlen("Group Permissions") - 3, ' ');
+         }
+         if (column == COLUMN_TYPE::OTHERS_PERMISSIONS) {
+            string.push_back(' ');
+            string.append(stat_element->permissions.others);
+            string.insert(string.end(), strlen("Others Permissions") - 3, ' ');
+         }
+#endif
+         if (column == COLUMN_TYPE::LAST_MODIFICATION) {
+            string.push_back(' ');
+            string.append(stat_element->last_modification);
+            string.insert(string.end(), bigger_last_modification - stat_element->last_modification.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::RELATIVE_PATH) {
+            string.push_back(' ');
+            string.append(stat_element->relative_path);
+            string.insert(string.end(), bigger_relative_path - stat_element->relative_path.size(), ' ');
+         }
+         if (column == COLUMN_TYPE::ABSOLUTE_PATH) {
+            string.push_back(' ');
+            string.append(stat_element->absolute_path);
+            string.insert(string.end(), bigger_absolute_path - stat_element->absolute_path.size(), ' ');
+         }
+      }
+      std::cout << string << std::endl;
+      delete stat_element;
+   }
+   delete stat_array;
 }
 
-static std::vector<struct StatResult *> *
-get_information(std::string name, Termsequel::ConditionList *conditions,
-                std::uint16_t current_level) {
+static std::vector<struct StatResult *> * get_information(
+   std::string name,
+   Termsequel::ConditionList *conditions,
+   std::uint16_t current_level
+) {
+
   // check if file is directory, if so, iterate over directory(might go
   // recursively) otherwise, just return information about the specific file
   stat_buffer_t stat_buffer;
@@ -484,10 +481,11 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
   return vector;
 }
 
-static std::vector<struct StatResult *> *
-get_directory_information(std::string name,
-                          Termsequel::ConditionList *conditions,
-                          std::uint16_t current_level) {
+static std::vector<struct StatResult *> * get_directory_information(
+   std::string name,
+   Termsequel::ConditionList *conditions,
+   std::uint16_t current_level
+) {
 
 #ifdef __linux__
 
@@ -506,10 +504,7 @@ get_directory_information(std::string name,
       break;
     }
     // Ignore the pseudo directories
-    if (directory_entry->d_name[0] == '.' &&
-        (directory_entry->d_name[1] == '.' ||
-         directory_entry->d_name[1] == '\0'))
-      continue;
+    if (directory_entry->d_name[0] == '.' && (directory_entry->d_name[1] == '.' || directory_entry->d_name[1] == '\0')) continue;
 
     // We need to pass the absolute path or relative path to stat.
     // or, use the fstat function. Then, we can pass only the directory fd and
@@ -517,11 +512,9 @@ get_directory_information(std::string name,
     std::string relative_path = name + "/" + directory_entry->d_name;
 
     // since, it will go recursively, we increment the actual level
-    auto info_vector =
-        get_information(relative_path, conditions, current_level + 1);
-    for (auto element : *info_vector) {
-      vector->push_back(element);
-    }
+    auto info_vector = get_information(relative_path, conditions, current_level + 1);
+    for (auto element : *info_vector) vector->push_back(element);
+
     // deletes the old vector
     delete info_vector;
   }
@@ -536,24 +529,21 @@ get_directory_information(std::string name,
 
   // get all the files
   std::string files_to_search = name + "\\*.*";
-  if ((file_pointer = _findfirst(files_to_search.c_str(), &entry_file)) ==
-      -1L) {
+  if ((file_pointer = _findfirst(files_to_search.c_str(), &entry_file)) == -1L) {
     // no file found
     return vector;
   }
   do {
-    // iterate over the files
-    if (entry_file.name[0] == '.' &&
-        (entry_file.name[1] == '.' || entry_file.name[1] == '\0'))
-      continue;
-    std::string relative_path = name + FILE_SEPARATOR + entry_file.name;
-    // since, it will go recursively, we increment the actual level
-    auto info_vector =
-        get_information(relative_path, conditions, current_level + 1);
-    for (auto element : *info_vector) {
-      vector->push_back(element);
-    }
-    delete info_vector;
+   // iterate over the files
+   if (entry_file.name[0] == '.' && (entry_file.name[1] == '.' || entry_file.name[1] == '\0')) continue;
+
+   std::string relative_path = name + FILE_SEPARATOR + entry_file.name;
+   // since, it will go recursively, we increment the actual level
+
+   auto info_vector = get_information(relative_path, conditions, current_level + 1);
+   for (auto element : *info_vector) vector->push_back(element);
+
+   delete info_vector;
 
   } while (_findnext(file_pointer, &entry_file) == 0);
   _findclose(file_pointer);
@@ -573,40 +563,42 @@ static std::string get_owner_name(uid_t owner) {
 }
 #endif
 
-static bool should_return(struct StatResult *row,
-                          struct Termsequel::ConditionList *condition_list) {
+static bool should_return(
+   struct StatResult *row,
+   struct Termsequel::ConditionList *condition_list
+) {
 
   bool ok = true;
   if (condition_list) {
 
-    // stores the result of the comparasions
-    std::vector<bool> comparasion;
+   // stores the result of the comparasions
+   std::vector<bool> comparasion;
 
-    // There is a need to use c style loops, because we need to get the logical
-    // operator based on the current index
-    for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
+   // There is a need to use c style loops, because we need to get the logical
+   // operator based on the current index
+   for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
       bool current = false;
       const auto condition = condition_list->conditions[index];
       union Comparasion compare_value = {0};
       bool compare_string = true;
       switch (condition->column) {
       case Termsequel::COLUMN_TYPE::FILENAME:
-        compare_value.string_value = row->filename.c_str();
-        break;
+         compare_value.string_value = row->filename.c_str();
+         break;
       case Termsequel::COLUMN_TYPE::FILESIZE:
-        compare_value.integer_value = row->size;
-        compare_string = false;
-        break;
+         compare_value.integer_value = row->size;
+         compare_string = false;
+         break;
       case Termsequel::COLUMN_TYPE::OWNER:
-        compare_value.string_value = row->owner.c_str();
-        break;
+         compare_value.string_value = row->owner.c_str();
+         break;
       case Termsequel::COLUMN_TYPE::LEVEL:
-        compare_value.integer_value = row->level;
-        compare_string = false;
-        break;
+         compare_value.integer_value = row->level;
+         compare_string = false;
+         break;
       case Termsequel::COLUMN_TYPE::FILE_TYPE:
-        compare_value.string_value = row->file_type.c_str();
-        break;
+         compare_value.string_value = row->file_type.c_str();
+         break;
       case Termsequel::COLUMN_TYPE::OWNER_PERMISSIONS:
          compare_value.string_value = (row->permissions.owner);
          break;
@@ -630,193 +622,175 @@ static bool should_return(struct StatResult *row,
       }
 
       switch (condition->operator_value) {
-      case Termsequel::Operator::EQUAL:
-        if (!compare_string) {
-          // compare integer
-          std::uint64_t condition_value = std::atol(condition->value.c_str());
-          current = compare_value.integer_value == condition_value;
-        } else {
-          // compare string
-          current = std::strncmp(compare_value.string_value, condition->value.c_str(), strlen(compare_value.string_value)) == 0;
-        }
-        break;
-      case Termsequel::Operator::STARTS_WITH:
-        if (compare_string) {
-          if (condition->value.size() > strlen(compare_value.string_value)) {
-            current = false;
-          } else {
-            current = std::strncmp(compare_value.string_value,
-                                   condition->value.c_str(),
-                                   condition->value.size()) == 0;
-          }
-        } else {
-          // tries to compare integer with starts with
-          // should throw invalid syntax, but, this will not be so easy
-          current = false;
-        }
-        break;
-      case Termsequel::Operator::NOT_STARTS_WITH:
-        if (compare_string) {
-          if (condition->value.size() > strlen(compare_value.string_value)) {
-            current = false;
-          } else {
-            current = std::strncmp(
-               compare_value.string_value,
-               condition->value.c_str(),
-               condition->value.size()
-            ) != 0;
-          }
-        } else {
-          // tries to compare integer with starts with
-          // should throw invalid syntax, but, this will not be so easy
-          current = false;
-        }
-        break;
-      case Termsequel::Operator::ENDS_WITH:
-        if (compare_string) {
-          if (condition->value.size() > strlen(compare_value.string_value)) {
-            current = false;
-          } else {
-            std::string tmp = compare_value.string_value;
-            current =
-                tmp.compare(tmp.size() - condition->value.size(),
-                            condition->value.size(), condition->value) == 0;
-          }
-        } else {
-          // tries to compare integer with starts with
-          // should throw invalid syntax, but, this will not be so easy to do
-          current = false;
-        }
-        break;
-      case Termsequel::Operator::NOT_ENDS_WITH:
-        if (compare_string) {
-          if (condition->value.size() > strlen(compare_value.string_value)) {
-            current = false;
-          } else {
-            std::string tmp = compare_value.string_value;
-            current = tmp.compare(tmp.size() - condition->value.size(), condition->value.size(), condition->value) != 0;
-          }
-        } else {
-          // tries to compare integer with starts with
-          // should throw invalid syntax, but, this will not be so easy to do
-          current = false;
-        }
-        break;
-      case Termsequel::Operator::CONTAINS:
-        if (compare_string) {
-          if (condition->value.size() > strlen(compare_value.string_value)) {
-            current = false;
-          } else {
-            current = std::strstr(compare_value.string_value,
-                                  condition->value.c_str()) != nullptr;
-          }
-        } else {
-          // tries to compare integer with starts with
-          // should throw invalid syntax, but, this will not be so easy
-          current = false;
-        }
-        break;
-      case Termsequel::Operator::NOT_CONTAINS:
-        if (compare_string) {
-          if (condition->value.size() > strlen(compare_value.string_value)) {
-            current = false;
-          } else {
-            current = std::strstr(compare_value.string_value, condition->value.c_str()) == nullptr;
-          }
-        } else {
-          // tries to compare integer with starts with
-          // should throw invalid syntax, but, this will not be so easy
-          current = false;
-        }
-        break;
-      case Termsequel::Operator::BIGGER:
-        if (compare_string) {
-          current = std::strcmp(compare_value.string_value,
-                                condition->value.c_str()) > 0;
-        } else {
-          std::uint64_t condition_value = std::atol(condition->value.c_str());
-          current = compare_value.integer_value > condition_value;
-        }
-        break;
-      case Termsequel::Operator::LESS:
-        if (compare_string) {
-          current = std::strcmp(compare_value.string_value,
-                                condition->value.c_str()) < 0;
-        } else {
-          std::uint64_t condition_value = std::atol(condition->value.c_str());
-          current = compare_value.integer_value < condition_value;
-        }
-        break;
-      case Termsequel::Operator::BIGGER_OR_EQUAL:
-        if (compare_string) {
-          current = std::strcmp(compare_value.string_value,
-                                condition->value.c_str()) >= 0;
-        } else {
-          std::uint64_t condition_value = std::atol(condition->value.c_str());
-          current = compare_value.integer_value >= condition_value;
-        }
-        break;
-      case Termsequel::Operator::LESS_OR_EQUAL:
-        if (compare_string) {
-          current = std::strcmp(compare_value.string_value,
-                                condition->value.c_str()) <= 0;
-        } else {
-          std::uint64_t condition_value = std::atol(condition->value.c_str());
-          current = compare_value.integer_value <= condition_value;
-        }
-        break;
-      }
+         case Termsequel::Operator::EQUAL:
+            if (!compare_string) {
+               // compare integer
+               std::uint64_t condition_value = std::atol(condition->value.c_str());
+               current = compare_value.integer_value == condition_value;
+            } else {
+               // compare string
+               current = std::strncmp(compare_value.string_value, condition->value.c_str(), strlen(compare_value.string_value)) == 0;
+            }
+            break;
+         case Termsequel::Operator::STARTS_WITH:
+            if (compare_string) {
+               if (condition->value.size() > strlen(compare_value.string_value)) {
+                  current = false;
+               } else {
+                  current = std::strncmp(compare_value.string_value, condition->value.c_str(), condition->value.size()) == 0;
+               }
+            } else {
+               // tries to compare integer with starts with
+               // should throw invalid syntax, but, this will not be so easy
+               current = false;
+            }
+            break;
+         case Termsequel::Operator::NOT_STARTS_WITH:
+            if (compare_string) {
+               if (condition->value.size() > strlen(compare_value.string_value)) {
+                  current = false;
+               } else {
+                  current = std::strncmp( compare_value.string_value, condition->value.c_str(), condition->value.size()) != 0;
+               }
+            } else {
+               // tries to compare integer with starts with
+               // should throw invalid syntax, but, this will not be so easy
+               current = false;
+            }
+            break;
+         case Termsequel::Operator::ENDS_WITH:
+            if (compare_string) {
+               if (condition->value.size() > strlen(compare_value.string_value)) {
+                  current = false;
+               } else {
+                  std::string tmp = compare_value.string_value;
+                  current = tmp.compare(tmp.size() - condition->value.size(), condition->value.size(), condition->value) == 0;
+               }
+            } else {
+               // tries to compare integer with starts with
+               // should throw invalid syntax, but, this will not be so easy to do
+               current = false;
+            }
+            break;
+         case Termsequel::Operator::NOT_ENDS_WITH:
+            if (compare_string) {
+               if (condition->value.size() > strlen(compare_value.string_value)) {
+               current = false;
+               } else {
+                  std::string tmp = compare_value.string_value;
+                  current = tmp.compare(tmp.size() - condition->value.size(), condition->value.size(), condition->value) != 0;
+               }
+            } else {
+               // tries to compare integer with starts with
+               // should throw invalid syntax, but, this will not be so easy to do
+               current = false;
+            }
+            break;
+         case Termsequel::Operator::CONTAINS:
+            if (compare_string) {
+               if (condition->value.size() > strlen(compare_value.string_value)) {
+                  current = false;
+               } else {
+                  current = std::strstr(compare_value.string_value, condition->value.c_str()) != nullptr;
+               }
+            } else {
+               // tries to compare integer with starts with
+               // should throw invalid syntax, but, this will not be so easy
+               current = false;
+            }
+            break;
+         case Termsequel::Operator::NOT_CONTAINS:
+            if (compare_string) {
+               if (condition->value.size() > strlen(compare_value.string_value)) {
+                  current = false;
+               } else {
+                  current = std::strstr(compare_value.string_value, condition->value.c_str()) == nullptr;
+               }
+            } else {
+               // tries to compare integer with starts with
+               // should throw invalid syntax, but, this will not be so easy
+               current = false;
+            }
+            break;
+         case Termsequel::Operator::BIGGER:
+            if (compare_string) {
+               current = std::strcmp(compare_value.string_value, condition->value.c_str()) > 0;
+            } else {
+               std::uint64_t condition_value = std::atol(condition->value.c_str());
+               current = compare_value.integer_value > condition_value;
+            }
+            break;
+         case Termsequel::Operator::LESS:
+            if (compare_string) {
+               current = std::strcmp(compare_value.string_value, condition->value.c_str()) < 0;
+            } else {
+               std::uint64_t condition_value = std::atol(condition->value.c_str());
+               current = compare_value.integer_value < condition_value;
+            }
+            break;
+         case Termsequel::Operator::BIGGER_OR_EQUAL:
+            if (compare_string) {
+               current = std::strcmp(compare_value.string_value, condition->value.c_str()) >= 0;
+            } else {
+               std::uint64_t condition_value = std::atol(condition->value.c_str());
+               current = compare_value.integer_value >= condition_value;
+            }
+            break;
+         case Termsequel::Operator::LESS_OR_EQUAL:
+            if (compare_string) {
+               current = std::strcmp(compare_value.string_value, condition->value.c_str()) <= 0;
+            } else {
+               std::uint64_t condition_value = std::atol(condition->value.c_str());
+               current = compare_value.integer_value <= condition_value;
+            }
+            break;
+         }
       comparasion.push_back(current);
     }
 
-    // just one comparasion, this means that there are no logical operators
-    if (comparasion.size() == 1)
-      return comparasion[0];
+   // just one comparasion, this means that there are no logical operators
+   if (comparasion.size() == 1) return comparasion[0];
 
-    // compares the results and yelds the boolean result
-    for (auto index = 1UL; index < condition_list->conditions.size(); index++) {
+   // compares the results and yelds the boolean result
+   for (auto index = 1UL; index < condition_list->conditions.size(); index++) {
 
       bool left = comparasion[index - 1];
       bool right = comparasion[index];
-      ok = (left && right) || (condition_list->operators[index - 1] ==
-                                   Termsequel::LogicalOperator::OR &&
-                               (left || right));
-      if (!ok)
-        break;
-    }
+      ok = (left && right) || (condition_list->operators[index - 1] == Termsequel::LogicalOperator::OR && (left || right));
+      if (!ok) break;
+   }
+
   }
 
   // returns the conditions value
   return ok;
 }
 
-static bool
-should_go_recursive(std::uint16_t current_level,
-                    struct Termsequel::ConditionList *condition_list) {
-  if (!condition_list)
-    return true;
+static bool should_go_recursive(
+   std::uint16_t current_level,
+   struct Termsequel::ConditionList *condition_list
+) {
+  if (!condition_list) return true;
 
   for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
-    const auto condition = condition_list->conditions[index];
-    switch (condition->column) {
-    case Termsequel::COLUMN_TYPE::LEVEL:
-      if (condition->operator_value == Termsequel::Operator::LESS) {
-        std::int64_t value = std::atoll(condition->value.c_str());
-        return current_level < value;
-      } else if (condition->operator_value ==
-                 Termsequel::Operator::LESS_OR_EQUAL) {
-        std::int64_t value = std::atoll(condition->value.c_str());
-        return current_level <= value;
-      } else if (condition->operator_value == Termsequel::Operator::EQUAL) {
-        std::int64_t value = std::atoll(condition->value.c_str());
-        return current_level <= value;
-      } else {
-        // should continue to go recursively
-        return true;
-      }
-      break;
-    default:
-      break;
+      const auto condition = condition_list->conditions[index];
+      switch (condition->column) {
+      case Termsequel::COLUMN_TYPE::LEVEL:
+         if (condition->operator_value == Termsequel::Operator::LESS) {
+            std::int64_t value = std::atoll(condition->value.c_str());
+            return current_level < value;
+         } else if (condition->operator_value == Termsequel::Operator::LESS_OR_EQUAL) {
+            std::int64_t value = std::atoll(condition->value.c_str());
+            return current_level <= value;
+         } else if (condition->operator_value == Termsequel::Operator::EQUAL) {
+            std::int64_t value = std::atoll(condition->value.c_str());
+            return current_level <= value;
+         } else {
+            // should continue to go recursively
+            return true;
+         }
+      default:
+         break;
     }
   }
   return true;

@@ -1,8 +1,8 @@
 #include <cstdio>
 
-
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #ifdef __linux__
@@ -10,11 +10,11 @@
    static constexpr const char *short_options = "hv";
 
 #elif defined (_WIN32)
+
 #endif
 
 #include "include/compiler.hpp"
 #include "termsequel.hpp"
-
 
 using namespace Termsequel;
 
@@ -29,48 +29,65 @@ int main (
 ) {
 
    char *binary_name = argv[0];
+   struct SystemCommand *command;
 
 #ifdef __linux__
 
    int option;
 
-    while ( (option = getopt(argc, argv, short_options)) != -1 ) {
+   while ( (option = getopt(argc, argv, short_options)) != -1 ) {
 
-        switch (option) {
-            case 'h':
-                // show help and exits
-                show_help(binary_name, stdout);
-                return 0;
+      switch (option) {
+         case 'h':
+            // show help and exits
+            show_help(binary_name, stdout);
+            return 0;
+         }
+      }
 
-        }
-    }
-
-    if (optind == argc) {
-        // invalid. SQL wasnt provided
-        show_help(binary_name, stderr);
-        return 1;
-    } else {
-        std::string sql = argv[argc - 1];
-        Compiler compiler(sql);
-        compiler.execute();
-    }
-
-#elif defined(_WIN32)
-
-   // I do not know if windows has somethig like getopt
-
-   // no arguments were provided!
-   if ( argc == 1 ) {
+   if (optind == argc) {
+      // invalid. SQL wasnt provided
       show_help(binary_name, stderr);
       return 1;
    } else {
       std::string sql = argv[argc - 1];
       Compiler compiler(sql);
-      compiler.execute();
+      command = compiler.compile();
+      if (command) System::execute(command);
+      else return 1;
    }
+
+#elif defined(_WIN32)
+
+   // I do not know if windows has somethig like getopt
+
+   if (argc == 1) {
+      // invalid. SQL wasnt provided
+      show_help(binary_name, stderr);
+      return 1;
+   } else {
+      std::string sql = argv[argc - 1];
+      Compiler compiler(sql);
+      command = compiler.compile();
+      if (command) System::execute(command);
+      else return 1;
+
+   }
+
 #endif
 
-    return 0;
+   if (command->conditions) {
+      // Use LVALUE to avoid copying ...
+      for (const auto &condition : command->conditions->conditions) delete condition;
+      delete command->conditions;
+   }
+   // manually deletes command.
+   // We should use unique_ptr, but, I was facing issues with copy constructor and things like this,
+   // then, I decided for now, to manually delete
+   delete command;
+
+
+   return 0;
 }
 
 void show_help(
