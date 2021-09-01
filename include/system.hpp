@@ -73,7 +73,7 @@ namespace Termsequel {
       public:
 
          // Executes the command, and return the list of elements
-         static void execute(const SystemCommand *command);
+         static bool execute(const SystemCommand *command);
    };
 
 }

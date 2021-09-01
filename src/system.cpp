@@ -75,6 +75,9 @@ constexpr static const char FILE_SEPARATOR = '\\';
 
 #define BUFFER_SIZE 1024 * 4 // 4 KiB
 
+// Used to indicate a variable ...
+static constexpr char VARIABLE_SYMBOL = '$';
+
 #ifdef DEBUG
 #define DEBUG_SYSTEM 1
 #endif
@@ -152,6 +155,10 @@ static bool should_go_recursive(
    struct Termsequel::ConditionList *condition_list
 );
 
+/**
+ * Returns the value from a variable from operating system
+*/
+static std::string get_variable_value(std::string name);
 
 #ifdef __linux__
 
@@ -163,9 +170,35 @@ static std::string get_owner_name(uid_t owner);
 
 #endif
 
-void Termsequel::System::execute(const Termsequel::SystemCommand *command) {
+bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
 
-  const auto stat_array = get_information(command->target, command->conditions, 0);
+   std::string target;
+   if (command->target[0] == VARIABLE_SYMBOL) {
+
+      const auto first_slash = command->target.find_first_of(FILE_SEPARATOR);
+      std::string temp_target = "";
+      if (first_slash != std::string::npos) {
+         temp_target = command->target.substr(0, first_slash);
+      } else {
+         temp_target = command->target;
+      }
+      target = get_variable_value(temp_target);
+
+      if (target.size() == 0) {
+         // the variable was not found, does nothing then ...
+         return false;
+      }
+      if (first_slash != std::string::npos) {
+         // must append the rest of the string
+         // an input as: $HOME/Documents
+         // Will become: home/user/Documents
+         target = target + command->target.substr(first_slash);
+      }
+   } else {
+      target = command->target;
+   }
+
+  const auto stat_array = get_information(target, command->conditions, 0);
 
   // output rule. Values must be padded
   // Starts with the default column name
@@ -346,6 +379,7 @@ void Termsequel::System::execute(const Termsequel::SystemCommand *command) {
       delete stat_element;
    }
    delete stat_array;
+   return true;
 }
 
 static std::vector<struct StatResult *> * get_information(
@@ -794,4 +828,38 @@ static bool should_go_recursive(
     }
   }
   return true;
+}
+
+static std::string get_variable_value(std::string name) {
+
+   // Ignores the $ symbol ...
+   const char *variable_name = name.c_str() + 1;
+#ifdef __linux__
+   // we should not free result, otherwise, we might get an undefined behavior
+   const char *result = std::getenv(variable_name);
+   if (result == nullptr) {
+      // invalid variable ...
+      std::cerr << "Value not found for: " << name << std::endl;
+      return "";
+   }
+
+   return result;
+#elif defined(_WIN32)
+   size_t required_size = 0;
+   getenv_s(&required_size, NULL, 0, variable_name);
+   if (required_size == 0) {
+      // invalid variable ...
+      std::cerr << "Value not found for: " << name << std::endl;
+      return "";
+   }
+   char *result = (char *) malloc(sizeof(char) * required_size + 1);
+   getenv_s(&required_size, result, required_size, variable_name);
+
+   // copy the value to the string
+   std::string value = result;
+
+   // frees the manually allocated string
+   free(result);
+   return value;
+#endif
 }
