@@ -30,6 +30,7 @@ int main (
 
    char *binary_name = argv[0];
    struct SystemCommand *command;
+   bool ok = false;
 
 #ifdef __linux__
 
@@ -53,7 +54,7 @@ int main (
       std::string sql = argv[argc - 1];
       Compiler compiler(sql);
       command = compiler.compile();
-      if (command) System::execute(command);
+      if (command) ok = System::execute(command);
       else return 1;
    }
 
@@ -69,9 +70,8 @@ int main (
       std::string sql = argv[argc - 1];
       Compiler compiler(sql);
       command = compiler.compile();
-      if (command) System::execute(command);
+      if (command) ok = System::execute(command);
       else return 1;
-
    }
 
 #endif
@@ -86,8 +86,8 @@ int main (
    // then, I decided for now, to manually delete
    delete command;
 
-
-   return 0;
+   int exit_status = ok ? 0 : 1;
+   return exit_status;
 }
 
 void show_help(

@@ -11,6 +11,7 @@
         + [Columns](#Columns)
         + [SELECT](#SELECT)
         + [WHERE](#WHERE)
+        + [Variables](#Variables)
 - [Developers](#Developers)
 
 # Termsequel
@@ -202,6 +203,31 @@ $ termsequel 'SELECT NAME FROM /HOME'
         ```sql
         SELECT NAME FROM . WHERE NAME NOT_ENDS_WITH .txt
         ```
+
+    - ### Variables
+
+        Now, it is possible to use your environment variables with **Termsequel**!   
+
+        For example, in bash, you can write:    
+        ```shell
+        # This is the same to write: /home/my_user 
+        $ termsequel 'SELECT NAME FROM $HOME WHERE NAME ENDS_WITH .c OR NAME ENDS_WITH .cpp'
+        ```
+
+        If you terminal support, you even use non environment variables:   
+        **Example:** Exporting a user defined shell variable(will live only in this shel session)   
+        ```shell
+        $ export BOOKS=/home/sgtcortez/Documentos/Books/
+        $ termsequel 'SELECT NAME, SIZE FROM $BOOKS'
+        ```
+
+        **Note:** You can only use this feature at the first part!   
+        For example, `$HOME/$OTHER` will be expanded to: `/home/my_user/$OTHER`.  
+        There are no plans to support more than one ...     
+        
+        **Note:** The **$** character must be the first source character!
+        For example, `Documents$HOME` will not be expanded! 
+
 
 # Developers
 There are sections for developers to be able to join this project.
