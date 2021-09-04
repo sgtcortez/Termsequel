@@ -45,6 +45,7 @@ namespace Termsequel {
          static const LexemeType OTHERS_PERMISSIONS;
 #endif
          static const LexemeType LAST_MODIFICATION;
+         static const LexemeType CREATION_DATE;
          static const LexemeType RELATIVE_PATH;
          static const LexemeType ABSOLUTE_PATH;
          static const LexemeType COMMA;

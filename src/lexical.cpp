@@ -20,6 +20,7 @@ std::shared_ptr<Termsequel::Lexeme>  parse_lexeme(const std::string string) {
    else if ( string.compare("OTHERS_PERMISSIONS")   == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::OTHERS_PERMISSIONS);
 #endif
    else if ( string.compare("LAST_MODIFICATION")    == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::LAST_MODIFICATION);
+   else if ( string.compare("CREATION_DATE")        == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::CREATION_DATE);
    else if ( string.compare("RELATIVE_PATH")        == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::RELATIVE_PATH);
    else if ( string.compare("ABSOLUTE_PATH")        == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::ABSOLUTE_PATH);
    else if ( string.compare(",")                    == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::COMMA);

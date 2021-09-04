@@ -55,6 +55,7 @@ namespace Termsequel {
    LexemeType const LexemeType::OTHERS_PERMISSIONS ( LexemeKey::COLUMN,      "OTHERS_PERMISSIONS");
 #endif
    LexemeType const LexemeType::LAST_MODIFICATION  ( LexemeKey::COLUMN,      "LAST_MODIFICATION");
+   LexemeType const LexemeType::CREATION_DATE      ( LexemeKey::COLUMN,      "CREATION_DATE");
    LexemeType const LexemeType::RELATIVE_PATH      ( LexemeKey::COLUMN,      "RELATIVE_PATH");
    LexemeType const LexemeType::ABSOLUTE_PATH      ( LexemeKey::COLUMN,      "ABSOLUTE_PATH");
    LexemeType const LexemeType::COMMA              ( LexemeKey::COMMA,       "COMMA");

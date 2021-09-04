@@ -5,6 +5,7 @@
 #include "system.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <iostream>
 #include <memory>
 
@@ -54,6 +55,7 @@ void append_action(
                else if ( Termsequel::LexemeType::OTHERS_PERMISSIONS == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::OTHERS_PERMISSIONS;
 #endif
                else if ( Termsequel::LexemeType::LAST_MODIFICATION  == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::LAST_MODIFICATION;
+               else if ( Termsequel::LexemeType::CREATION_DATE      == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::CREATION_DATE;
                else if ( Termsequel::LexemeType::RELATIVE_PATH      == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::RELATIVE_PATH;
                else if ( Termsequel::LexemeType::ABSOLUTE_PATH      == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::ABSOLUTE_PATH;
 
