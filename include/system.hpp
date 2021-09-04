@@ -26,6 +26,7 @@ namespace Termsequel {
       OTHERS_PERMISSIONS, // permissions of others
 #endif
       LAST_MODIFICATION, // last modification of the file
+      CREATION_DATE, // The creation date of the file
       RELATIVE_PATH, // The relative path of the file
       ABSOLUTE_PATH, // The absolute path of the file
    };

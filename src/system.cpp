@@ -17,6 +17,7 @@
 #include <vector>
 #include <time.h>
 #include <iostream>
+#include <fcntl.h>  // for OPEN file constants ...
 
 #ifdef __linux__
 
@@ -24,7 +25,9 @@
 #include <unistd.h>
 #include <pwd.h>     // getpwuid
 
-#define STAT stat
+
+//                           FILE_TYPE    FILE_MODE    USER ID     GROUP ID     CREATION      SIZE         LAST MODIFICATION
+#define STATX_INTERESET_MASK STATX_TYPE | STATX_MODE | STATX_UID | STATX_GID  | STATX_BTIME | STATX_SIZE | STATX_MTIME
 
 #define IS_DIRECTORY(bitset) (bitset & S_IFDIR)
 #define FILE_TYPE_MASK S_IFMT
@@ -44,16 +47,48 @@
 #define WRITE_PERMISSION_OTHERS   S_IWOTH
 #define EXECUTE_PERMISSION_OTHERS S_IXOTH
 
+typedef struct statx stat_buffer_t;
 
-typedef struct stat stat_buffer_t;
+static constexpr std::uint32_t get_uid(stat_buffer_t &buffer) {
+   return buffer.stx_uid;
+}
+
+static constexpr std::uint16_t get_mode(stat_buffer_t &buffer) {
+   return buffer.stx_mode;
+}
+
+static constexpr std::uint64_t get_size(stat_buffer_t &buffer) {
+   return buffer.stx_size;
+}
+
+static constexpr __time_t get_last_modification_date(stat_buffer_t &buffer) {
+   return buffer.stx_mtime.tv_sec;
+}
+
+static constexpr __time_t get_creation_date(stat_buffer_t &buffer) {
+   return buffer.stx_btime.tv_sec;
+}
+
+static const char empty_string[1] = {0};
+
+static int termsequel_stat(int fd, stat_buffer_t *stat_buffer) {
+   return statx(fd, empty_string, AT_EMPTY_PATH, STATX_INTERESET_MASK, stat_buffer);
+}
+
+static void termsequel_open(int *fd_ptr, const char *filename) {
+   *fd_ptr = open(filename, O_PATH);
+}
+
+static void termsequel_close(int fd) {
+   close(fd);
+}
+
 constexpr static const char FILE_SEPARATOR = '/';
 
 #elif defined(_WIN32)
 
 #include <io.h> // _findfirst _findnext
 #include <windows.h>  // GetFullPathName
-
-#define STAT _stat
 
 #define IS_DIRECTORY(bitset) (bitset & _S_IFDIR)
 #define FILE_TYPE_MASK _S_IFMT
@@ -66,6 +101,32 @@ constexpr static const char FILE_SEPARATOR = '/';
 #define EXECUTE_PERMISSION_OWNER _S_IEXEC
 
 typedef struct _stat stat_buffer_t;
+
+static constexpr std::uint16_t get_mode(stat_buffer_t &buffer) {
+   return buffer.st_mode;
+}
+
+static constexpr std::uint64_t get_size(stat_buffer_t &buffer) {
+   return buffer.st_size;
+}
+
+static constexpr __time64_t get_last_modification_date(stat_buffer_t &buffer) {
+   return buffer.st_mtime;
+}
+
+static constexpr __time64_t get_creation_date(stat_buffer_t &buffer) {
+   return buffer.st_ctime;
+}
+
+/**
+ * Obs: We do not use open here, because, we can not open a directory in Windows ...
+ * This is why, we need to use this version of stat, and, use if-elif directives ...
+*/
+
+static int termsequel_stat(const char *filename, stat_buffer_t *stat_buffer) {
+   return _stat(filename, stat_buffer) ;
+}
+
 constexpr static const char FILE_SEPARATOR = '\\';
 
 #endif
@@ -116,6 +177,9 @@ struct StatResult {
 
    // Last modification of the file
   std::string last_modification;
+
+  // The creation date of the file
+  std::string creation_date;
 
    // the relative path of the file
   std::string relative_path;
@@ -214,6 +278,7 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
   std::size_t bigger_level = strlen("Level");
   std::size_t bigger_file_type = strlen("File Type");
   std::size_t bigger_last_modification = strlen("Last Modification");
+  std::size_t bigger_creation_date = strlen("Creation Date");
   std::size_t bigger_relative_path = strlen("Relative Path");
   std::size_t bigger_absolute_path = strlen("Absolute Path");
 
@@ -249,6 +314,11 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
       if (column == COLUMN_TYPE::LAST_MODIFICATION) {
          if ( stat_element->last_modification.size() > bigger_last_modification ) {
             bigger_last_modification = stat_element->last_modification.size();
+         }
+      }
+      if ( column == COLUMN_TYPE::CREATION_DATE) {
+         if ( stat_element->creation_date.size() > bigger_creation_date ) {
+            bigger_creation_date = stat_element->creation_date.size();
          }
       }
       if (column == COLUMN_TYPE::RELATIVE_PATH ) {
@@ -306,6 +376,10 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
       if (column == COLUMN_TYPE::LAST_MODIFICATION) {
          header.append(" Last Modification");
          header.insert(header.end(), bigger_last_modification - strlen("Last Modification"), ' ');
+      }
+      if (column == COLUMN_TYPE::CREATION_DATE) {
+         header.append(" Creation Date");
+         header.insert(header.end(), bigger_creation_date - strlen("Creation Date"), ' ');
       }
       if ( column == COLUMN_TYPE::RELATIVE_PATH ) {
          header.append(" Relative Path");
@@ -370,6 +444,11 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
             string.append(stat_element->last_modification);
             string.insert(string.end(), bigger_last_modification - stat_element->last_modification.size(), ' ');
          }
+         if (column == COLUMN_TYPE::CREATION_DATE) {
+            string.push_back(' ');
+            string.append(stat_element->creation_date);
+            string.insert(string.end(), bigger_creation_date - stat_element->creation_date.size(), ' ');
+         }
          if (column == COLUMN_TYPE::RELATIVE_PATH) {
             string.push_back(' ');
             string.append(stat_element->relative_path);
@@ -394,21 +473,34 @@ static std::vector<struct StatResult *> * get_information(
    std::uint16_t current_level
 ) {
 
-  // check if file is directory, if so, iterate over directory(might go
-  // recursively) otherwise, just return information about the specific file
   stat_buffer_t stat_buffer;
 
-  if (STAT(name.c_str(), &stat_buffer) != 0) {
-// error
-// Could not stat
-// returns empty vector
-#ifdef DEBUG_SYSTEM
-    std::cerr << "Could not stat the file: " << name << std::endl;
-#endif
-    return new std::vector<struct StatResult *>;
-  }
+#ifdef __linux__
 
-  if (IS_DIRECTORY(stat_buffer.st_mode)) {
+   int fd;
+   termsequel_open(&fd, name.c_str());
+   if (fd < 0) {
+    return new std::vector<struct StatResult *>;
+   }
+
+
+   if (termsequel_stat(fd, &stat_buffer) != 0) {
+      termsequel_close(fd);
+      return new std::vector<struct StatResult *>;
+   }
+   termsequel_close(fd);
+
+#elif defined(_WIN32)
+
+   if (termsequel_stat(name.c_str(), &stat_buffer) != 0) {
+      return new std::vector<struct StatResult *>;
+   }
+
+#endif
+
+  // check if file is directory, if so, iterate over directory(might go
+  // recursively) otherwise, just return information about the specific file
+  if (IS_DIRECTORY(get_mode(stat_buffer))) {
     // directory
     // goes recursively
     if (should_go_recursive(current_level, conditions)) {
@@ -426,16 +518,16 @@ static std::vector<struct StatResult *> * get_information(
   } else {
     stat_value->filename = name;
   }
-  stat_value->size = stat_buffer.st_size;
+  stat_value->size = get_size(stat_buffer);
 #ifdef __linux__
-  stat_value->owner = get_owner_name(stat_buffer.st_uid);
+  stat_value->owner = get_owner_name(get_uid(stat_buffer));
 #elif defined(_WIN32)
   stat_value->owner = "Not available";
 #endif
   stat_value->level = current_level;
 
   // S_IFMT -> bit mask for the file type bit field
-  switch (stat_buffer.st_mode & FILE_TYPE_MASK) {
+  switch (get_mode(stat_buffer) & FILE_TYPE_MASK) {
   case REGULAR_FLAG:
     stat_value->file_type = "REGULAR";
     break;
@@ -447,40 +539,62 @@ static std::vector<struct StatResult *> * get_information(
     break;
   }
 
-   stat_value->permissions.owner[0] = stat_buffer.st_mode & READ_PERMISSION_OWNER    ? 'R' : '-';
-   stat_value->permissions.owner[1] = stat_buffer.st_mode & WRITE_PERMISSION_OWNER   ? 'W' : '-';
-   stat_value->permissions.owner[2] = stat_buffer.st_mode & EXECUTE_PERMISSION_OWNER ? 'X' : '-';
+   stat_value->permissions.owner[0] = get_mode(stat_buffer) & READ_PERMISSION_OWNER    ? 'R' : '-';
+   stat_value->permissions.owner[1] = get_mode(stat_buffer) & WRITE_PERMISSION_OWNER   ? 'W' : '-';
+   stat_value->permissions.owner[2] = get_mode(stat_buffer) & EXECUTE_PERMISSION_OWNER ? 'X' : '-';
    stat_value->permissions.owner[3] = '\0';
 #ifdef __linux__
-   stat_value->permissions.group[0] = stat_buffer.st_mode & READ_PERMISSION_GROUP    ? 'R' : '-';
-   stat_value->permissions.group[1] = stat_buffer.st_mode & WRITE_PERMISSION_GROUP   ? 'W' : '-';
-   stat_value->permissions.group[2] = stat_buffer.st_mode & EXECUTE_PERMISSION_GROUP ? 'X' : '-';
+   stat_value->permissions.group[0] = get_mode(stat_buffer) & READ_PERMISSION_GROUP    ? 'R' : '-';
+   stat_value->permissions.group[1] = get_mode(stat_buffer) & WRITE_PERMISSION_GROUP   ? 'W' : '-';
+   stat_value->permissions.group[2] = get_mode(stat_buffer) & EXECUTE_PERMISSION_GROUP ? 'X' : '-';
    stat_value->permissions.group[3] = '\0';
 
-   stat_value->permissions.others[0] = stat_buffer.st_mode & READ_PERMISSION_OTHERS    ? 'R' : '-';
-   stat_value->permissions.others[1] = stat_buffer.st_mode & WRITE_PERMISSION_OTHERS   ? 'W' : '-';
-   stat_value->permissions.others[2] = stat_buffer.st_mode & EXECUTE_PERMISSION_OTHERS ? 'X' : '-';
+   stat_value->permissions.others[0] = get_mode(stat_buffer) & READ_PERMISSION_OTHERS    ? 'R' : '-';
+   stat_value->permissions.others[1] = get_mode(stat_buffer) & WRITE_PERMISSION_OTHERS   ? 'W' : '-';
+   stat_value->permissions.others[2] = get_mode(stat_buffer) & EXECUTE_PERMISSION_OTHERS ? 'X' : '-';
    stat_value->permissions.others[3] = '\0';
 #endif
 
    // YYYY-MM-DD HH:MM:SS
-   char buffer[20];
+   char buffer[20] = {0};
+   const auto modification_date = get_last_modification_date(stat_buffer);
+   const auto creation_date = get_creation_date(stat_buffer);
 
 #ifdef __linux
 
-   const auto local_time = localtime(&(stat_buffer.st_mtime));
-   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", local_time);
+   const auto modification_time = localtime(&(modification_date));
+   const auto creation_time = localtime(&(creation_date));
+
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", modification_time);
+   stat_value->last_modification = buffer;
+
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", creation_time);
+   stat_value->creation_date = buffer;
+
+
 #elif defined(_WIN32)
    struct tm local_time;
-   errno_t error_number = localtime_s(&local_time, &(stat_buffer.st_mtime));
+   errno_t error_number = localtime_s(&local_time, &(modification_date));
    if (error_number != 0) {
       // error here
       std::cerr << "Could not get the locatime. Error Number: " << error_number << std::endl;
    }
    std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", &local_time);
-#endif
 
    stat_value->last_modification = buffer;
+
+   error_number = localtime_s(&local_time, &(creation_date));
+   if (error_number != 0) {
+      // error here
+      std::cerr << "Could not get the locatime. Error Number: " << error_number << std::endl;
+   }
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", &local_time);
+   stat_value->creation_date = buffer;
+
+
+
+#endif
+
    stat_value->relative_path = name;
 
 #ifdef __linux__
@@ -509,7 +623,6 @@ static std::vector<struct StatResult *> * get_information(
    }
 
 #endif
-
 
 
   auto vector = new std::vector<struct StatResult *>;
@@ -596,7 +709,6 @@ static std::vector<struct StatResult *> * get_directory_information(
 #ifdef __linux__
 
 static std::string get_owner_name(uid_t owner) {
-
    struct passwd *user = getpwuid(owner);
    std::string result = user->pw_name;
    return result;
@@ -652,6 +764,9 @@ static bool should_return(
 #endif
       case Termsequel::COLUMN_TYPE::LAST_MODIFICATION:
          compare_value.string_value = row->last_modification.c_str();
+         break;
+      case Termsequel::COLUMN_TYPE::CREATION_DATE:
+         compare_value.string_value = row->creation_date.c_str();
          break;
       case Termsequel::COLUMN_TYPE::RELATIVE_PATH:
          compare_value.string_value = row->relative_path.c_str();

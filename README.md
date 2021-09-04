@@ -144,6 +144,10 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             The absolute path of the file.
 
+        + CREATION_DATE
+
+            The creation date of the file.
+
     - ### SELECT
 
         The same syntax as a SQL database.    
