@@ -27,6 +27,7 @@ std::shared_ptr<Termsequel::Lexeme>  parse_lexeme(const std::string string) {
    else if ( string.compare("FROM")                 == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::FROM);
    else if ( string.compare("WHERE")                == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::WHERE);
    else if ( string.compare("=")                    == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::EQUAL);
+   else if ( string.compare("!=")                   == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::NOT_EQUAL);
    else if ( string.compare("STARTS_WITH")          == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::STARTS_WITH);
    else if ( string.compare("NOT_STARTS_WITH")      == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::NOT_STARTS_WITH);
    else if ( string.compare("ENDS_WITH")            == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::ENDS_WITH);

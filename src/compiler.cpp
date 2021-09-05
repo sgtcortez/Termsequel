@@ -78,6 +78,7 @@ void append_action(
          {
             Termsequel::Operator operator_value;
             if      ( Termsequel::LexemeType::EQUAL           == lexeme->get_type()) operator_value = Termsequel::Operator::EQUAL;
+            else if ( Termsequel::LexemeType::NOT_EQUAL       == lexeme->get_type()) operator_value = Termsequel::Operator::NOT_EQUAL;
             else if ( Termsequel::LexemeType::STARTS_WITH     == lexeme->get_type()) operator_value = Termsequel::Operator::STARTS_WITH;
             else if ( Termsequel::LexemeType::NOT_STARTS_WITH == lexeme->get_type()) operator_value = Termsequel::Operator::NOT_STARTS_WITH;
             else if ( Termsequel::LexemeType::ENDS_WITH       == lexeme->get_type()) operator_value = Termsequel::Operator::ENDS_WITH;

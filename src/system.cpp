@@ -781,6 +781,20 @@ static bool should_return(
                current = std::strncmp(compare_value.string_value, condition->value.c_str(), strlen(compare_value.string_value)) == 0;
             }
             break;
+         case Termsequel::Operator::NOT_EQUAL:
+            if (!compare_string) {
+               // compare integer
+               std::uint64_t condition_value = std::atol(condition->value.c_str());
+               current = compare_value.integer_value != condition_value;
+            } else {
+               // compare string
+               if (strlen(compare_value.string_value) != condition->value.size()) {
+                  current = true;
+               } else {
+                  current = std::strncmp(compare_value.string_value, condition->value.c_str(), strlen(compare_value.string_value)) != 0;
+               }
+            }
+            break;
          case Termsequel::Operator::STARTS_WITH:
             if (compare_string) {
                if (condition->value.size() > strlen(compare_value.string_value)) {
