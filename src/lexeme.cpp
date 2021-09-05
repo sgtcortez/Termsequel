@@ -63,6 +63,7 @@ namespace Termsequel {
    LexemeType const LexemeType::IDENTIFIER         ( LexemeKey::IDENTIFIER,  "IDENTIFIER");
    LexemeType const LexemeType::WHERE              ( LexemeKey::WHERE,       "WHERE");
    LexemeType const LexemeType::EQUAL              ( LexemeKey::COMPARASION, "EQUAL");
+   LexemeType const LexemeType::NOT_EQUAL          ( LexemeKey::COMPARASION, "NOT_EQUAL");
    LexemeType const LexemeType::STARTS_WITH        ( LexemeKey::COMPARASION, "STARTS_WITH");
    LexemeType const LexemeType::NOT_STARTS_WITH    ( LexemeKey::COMPARASION, "NOT_STARTS_WITH");
    LexemeType const LexemeType::ENDS_WITH          ( LexemeKey::COMPARASION, "ENDS_WITH");

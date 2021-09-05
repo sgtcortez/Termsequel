@@ -38,6 +38,7 @@ namespace Termsequel {
 
    enum class Operator {
       EQUAL,
+      NOT_EQUAL,
       STARTS_WITH,
       NOT_STARTS_WITH,
       ENDS_WITH,

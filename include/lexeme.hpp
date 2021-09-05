@@ -53,6 +53,7 @@ namespace Termsequel {
          static const LexemeType IDENTIFIER;
          static const LexemeType WHERE;
          static const LexemeType EQUAL;
+         static const LexemeType NOT_EQUAL;
          static const LexemeType STARTS_WITH;
          static const LexemeType NOT_STARTS_WITH;
          static const LexemeType ENDS_WITH;

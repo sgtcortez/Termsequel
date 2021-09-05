@@ -75,3 +75,4 @@ Contains information about the versions of Termsequel
         | Add ABSOLUTE_PATH column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/52) | [PR](https://github.com/sgtcortez/Termsequel/pull/64) | Added the absolute path column |  
         | Add support for variables | [ISSUE]() | [PR](https://github.com/sgtcortez/Termsequel/pull/69) | Now, it is possible to use environment variables, and terminal variables(if supported by your terminal) with termsequel **FROM** source.  
         | Add CREATION_DATE column | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/31) | [PR](https://github.com/sgtcortez/Termsequel/pull/77) | Now, the file creation date is available |
+        | Add NOT EQUAL comparasion | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/74) | [PR](https://github.com/sgtcortez/Termsequel/pull/78) | Now, it is possible to filter by not equal values |
