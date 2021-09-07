@@ -40,3 +40,11 @@ Contains information about the versions of Termsequel
         | Feature | Issue | Pull Request | Description |
         | :-:   | :-: | :-: | :-: |    
         | Equal operators consider only the user input string | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/56) | [PR](https://github.com/sgtcortez/Termsequel/pull/58) | The equal operation was not working as expected to be |
+    
+- Release 1.0.2
+
+    - Bug Fixes
+
+        | Feature | Issue | Pull Request | Description |
+        | :-:   | :-: | :-: | :-: |    
+        | Where conditions does not work well | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/76) | [PR](https://github.com/sgtcortez/Termsequel/pull/81) | When using three or more conditions, termsequel returns wrong results |
