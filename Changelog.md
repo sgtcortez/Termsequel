@@ -102,3 +102,22 @@ Contains information about the versions of Termsequel
         | Bug | Issue | Pull Request |
         | :-:   | :-: | :-: |
         | Whitespace between date & time information | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/91) | [PR](https://github.com/sgtcortez/Termsequel/pull/99) |    
+        
+- Release 1.2
+
+    - Information
+
+        Release date not defined.   
+
+    + Developers
+
+        Developers that helped with commits, tests, ideas.
+
+        * [sgtcortez](https://github.com/sgtcortez)
+
+    - Features
+
+        There is the list of features in this release.
+
+        | Feature | Issue | Pull Request | Description |
+        | :-:   | :-: | :-: | :-: |
