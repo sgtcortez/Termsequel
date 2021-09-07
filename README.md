@@ -160,8 +160,19 @@ $ termsequel 'SELECT NAME FROM /HOME'
         -- Returns the files that the owner has the read and execute flag set.
         ```
 
+        **Note:** If you write something like:  
+        ```sql
+        SELECT NAME FROM . WHERE NAME ENDS_WITH .cpp AND SIZE > 1000  
+        ```
+        This means:  
+        > Return the name of the files whose ends with .cpp and has more than 1000 bytes
 
-
+        Now, if you write something like:  
+        ```sql
+        SELECT NAME FROM . WHERE NAME ENDS_WITH .cpp AND SIZE > 1000 OR NAME ENDS_WITH .txt
+        ```
+        This means:   
+        > Return the name of the files whose ends with .cpp and has the size greater than 1000 bytes or ends with .txt
 
 # Developers
 There are sections for developers to be able to join this project.

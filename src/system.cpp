@@ -139,6 +139,12 @@ static std::string get_owner_name(uid_t owner);
 
 #endif
 
+bool compare(
+   bool left,
+   bool right,
+   Termsequel::LogicalOperator operator_type
+);
+
 std::vector<std::string *> *
 Termsequel::System::execute(Termsequel::Command *command) {
 
@@ -611,16 +617,13 @@ static bool should_return(struct StatResult *row,
       return comparasion[0];
 
     // compares the results and yelds the boolean result
-    for (auto index = 1UL; index < condition_list->conditions.size(); index++) {
+   for (auto index = 1UL; index < condition_list->conditions.size(); index++) {
 
       bool left = comparasion[index - 1];
       bool right = comparasion[index];
-      ok = (left && right) || (condition_list->operators[index - 1] ==
-                                   Termsequel::LogicalOperator::OR &&
-                               (left || right));
-      if (!ok)
-        break;
-    }
+      ok = compare(left, right, condition_list->operators[index - 1]);
+      comparasion[index] = ok;
+   }
   }
 
   // returns the conditions value
@@ -657,4 +660,18 @@ should_go_recursive(std::uint16_t current_level,
     }
   }
   return true;
+}
+
+bool compare (
+   bool left,
+   bool right,
+   Termsequel::LogicalOperator operator_type
+) {
+   switch (operator_type) {
+      case Termsequel::LogicalOperator::AND:
+         return left && right;
+      case Termsequel::LogicalOperator::OR:
+         return left || right;
+   }
+   return false;
 }
