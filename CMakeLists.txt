@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(termsequel VERSION 1.1.2)
+project(termsequel VERSION 1.2.0)
 
 configure_file(termsequel.hpp.in termsequel.hpp)
 

@@ -94,3 +94,22 @@ Contains information about the versions of Termsequel
         | Bug | Issue | Pull Request |
         | :-:   | :-: | :-: | :-: |    
         | Double declaration of statx structure | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/93) | [PR](https://github.com/sgtcortez/Termsequel/pull/94) |
+        
+- Release 1.2
+
+    - Information
+
+        Release date not defined.   
+
+    + Developers
+
+        Developers that helped with commits, tests, ideas.
+
+        * [sgtcortez](https://github.com/sgtcortez)
+
+    - Features
+
+        There is the list of features in this release.
+
+        | Feature | Issue | Pull Request | Description |
+        | :-:   | :-: | :-: | :-: |
