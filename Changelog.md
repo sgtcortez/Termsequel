@@ -54,7 +54,7 @@ Contains information about the versions of Termsequel
 
     - Information
 
-        Release date is undefined for now.
+        Released at: 2021-09-07.   
 
     + Developers
 

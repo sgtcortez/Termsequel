@@ -31,6 +31,8 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel)
 
     If you want to compile, then, you will need a C++ compiler. I suggest [**clang**](https://clang.llvm.org/)!
 
+    If you are running in Linux, you will need at least the glibc 2.28 to running properly Termsequel(because of the stax syscall).
+
 - ## Goals
 
     What are my goals and **Termsequel** goals?
