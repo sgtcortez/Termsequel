@@ -86,3 +86,22 @@ Contains information about the versions of Termsequel
         | Cant use on systems with glibc older than 2.28 | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/82) | [PR](https://github.com/sgtcortez/Termsequel/pull/83) | Now, we call **stax** system call directly |         
         | Creation Date overwrite Last Modification | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/84) | [PR](https://github.com/sgtcortez/Termsequel/pull/85) | Since, the add of statx syscall, we overwrite the last modification date|
         | Star do not include CREATION_DATE  | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/86) | [PR](https://github.com/sgtcortez/Termsequel/issues/87) | When select with star, it do not include the new creation date column | 
+        
+- Release 1.2
+
+    - Information
+
+        Release date not defined.   
+
+    + Developers
+
+        Developers that helped with commits, tests, ideas.
+
+        * [sgtcortez](https://github.com/sgtcortez)
+
+    - Features
+
+        There is the list of features in this release.
+
+        | Feature | Issue | Pull Request | Description |
+        | :-:   | :-: | :-: | :-: |
