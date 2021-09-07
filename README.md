@@ -18,11 +18,13 @@
 Bringing SQL to our filesystem.      
 ![Termsequel](./.assets/Termsequel-logo.png)
 
-Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel)
+Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel) [Site](https://sgtcortez.github.io/Termsequel/)
 
 - ## What is
 
     Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.  
+    
+
 
 - ## Dependencies
 
