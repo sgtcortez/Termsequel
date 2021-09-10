@@ -36,6 +36,7 @@ void append_action(
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::OTHERS_PERMISSIONS);
 #endif
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::LAST_MODIFICATION);
+               system_command->columns.push_back(Termsequel::COLUMN_TYPE::CREATION_DATE);
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::RELATIVE_PATH);
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::ABSOLUTE_PATH);
                break;
