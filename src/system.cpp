@@ -28,9 +28,6 @@
 #include <sys/types.h>
 #include <linux/stat.h>
 
-//                           FILE_TYPE    FILE_MODE    USER ID     GROUP ID     CREATION      SIZE         LAST MODIFICATION
-#define STATX_INTERESET_MASK STATX_TYPE | STATX_MODE | STATX_UID | STATX_GID  | STATX_BTIME | STATX_SIZE | STATX_MTIME
-
 #define IS_DIRECTORY(bitset) (bitset & S_IFDIR)
 #define FILE_TYPE_MASK S_IFMT
 #define DIRECTORY_FLAG S_IFDIR
@@ -77,7 +74,7 @@ static int termsequel_stat(
 ) {
    // We need to do this, because, libc wrapper for Statx came only in glibc 2.28 ...
    // but, it is available on Linux Kernel since 4.11
-   return syscall(__NR_statx, AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_INTERESET_MASK, stat_buffer);
+   return syscall(__NR_statx, AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_ALL, stat_buffer);
 }
 
 
@@ -542,13 +539,14 @@ static std::vector<struct StatResult *> * get_information(
 
 #ifdef __linux
 
-   const auto modification_time = localtime(&(modification_date));
-   const auto creation_time = localtime(&(creation_date));
+   auto date = localtime(&(modification_date));
 
-   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", modification_time);
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", date);
    stat_value->last_modification = buffer;
 
-   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", creation_time);
+   date = localtime(&(creation_date));
+
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", date);
    stat_value->creation_date = buffer;
 
 
