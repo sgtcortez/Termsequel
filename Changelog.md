@@ -84,3 +84,4 @@ Contains information about the versions of Termsequel
         | Bug | Issue | Pull Request | Description |
         | :-:   | :-: | :-: | :-: |    
         | Cant use on systems with glibc older than 2.28 | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/82) | [PR](https://github.com/sgtcortez/Termsequel/pull/83) | Now, we call **stax** system call directly |         
+        | Creation Date overwrite Last Modification | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/84) | [PR](https://github.com/sgtcortez/Termsequel/pull/85) | Since, the add of statx syscall, we overwrite the last modification date|
