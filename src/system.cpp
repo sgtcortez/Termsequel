@@ -24,7 +24,9 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <pwd.h>     // getpwuid
-
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <linux/stat.h>
 
 //                           FILE_TYPE    FILE_MODE    USER ID     GROUP ID     CREATION      SIZE         LAST MODIFICATION
 #define STATX_INTERESET_MASK STATX_TYPE | STATX_MODE | STATX_UID | STATX_GID  | STATX_BTIME | STATX_SIZE | STATX_MTIME
@@ -69,19 +71,15 @@ static constexpr __time_t get_creation_date(stat_buffer_t &buffer) {
    return buffer.stx_btime.tv_sec;
 }
 
-static const char empty_string[1] = {0};
-
-static int termsequel_stat(int fd, stat_buffer_t *stat_buffer) {
-   return statx(fd, empty_string, AT_EMPTY_PATH, STATX_INTERESET_MASK, stat_buffer);
+static int termsequel_stat(
+   const char* filename,
+   stat_buffer_t *stat_buffer
+) {
+   // We need to do this, because, libc wrapper for Statx came only in glibc 2.28 ...
+   // but, it is available on Linux Kernel since 4.11
+   return syscall(__NR_statx, AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_INTERESET_MASK, stat_buffer);
 }
 
-static void termsequel_open(int *fd_ptr, const char *filename) {
-   *fd_ptr = open(filename, O_PATH);
-}
-
-static void termsequel_close(int fd) {
-   close(fd);
-}
 
 constexpr static const char FILE_SEPARATOR = '/';
 
@@ -473,30 +471,12 @@ static std::vector<struct StatResult *> * get_information(
    std::uint16_t current_level
 ) {
 
-  stat_buffer_t stat_buffer;
-
-#ifdef __linux__
-
-   int fd;
-   termsequel_open(&fd, name.c_str());
-   if (fd < 0) {
-    return new std::vector<struct StatResult *>;
-   }
-
-
-   if (termsequel_stat(fd, &stat_buffer) != 0) {
-      termsequel_close(fd);
-      return new std::vector<struct StatResult *>;
-   }
-   termsequel_close(fd);
-
-#elif defined(_WIN32)
+   stat_buffer_t stat_buffer;
 
    if (termsequel_stat(name.c_str(), &stat_buffer) != 0) {
       return new std::vector<struct StatResult *>;
    }
 
-#endif
 
   // check if file is directory, if so, iterate over directory(might go
   // recursively) otherwise, just return information about the specific file
