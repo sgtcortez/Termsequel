@@ -134,6 +134,8 @@ constexpr static const char FILE_SEPARATOR = '\\';
 // Used to indicate a variable ...
 static constexpr char VARIABLE_SYMBOL = '$';
 
+static constexpr uint16_t INITIAL_LEVEL = 0;
+
 #ifdef DEBUG
 #define DEBUG_SYSTEM 1
 #endif
@@ -192,13 +194,15 @@ union Comparasion {
 static std::vector<struct StatResult *> * get_directory_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint16_t current_level
+   std::uint16_t current_level,
+   std::uint16_t max_depth
 );
 
 static std::vector<struct StatResult *> * get_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint16_t current_level
+   std::uint16_t current_level,
+   std::uint16_t max_depth
 );
 
 // Checks if the value should return to the user
@@ -211,7 +215,7 @@ static bool should_return(
 // Checks only for the level condition
 static bool should_go_recursive(
    std::uint16_t current_level,
-   struct Termsequel::ConditionList *condition_list
+   std::uint16_t max_depth
 );
 
 /**
@@ -235,7 +239,10 @@ bool compare(
    Termsequel::LogicalOperator operator_type
 );
 
-bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
+bool Termsequel::System::execute(
+   const Termsequel::SystemCommand *command,
+   std::uint16_t max_depth
+) {
 
    std::string target;
    if (command->target[0] == VARIABLE_SYMBOL) {
@@ -263,7 +270,7 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
       target = command->target;
    }
 
-  const auto stat_array = get_information(target, command->conditions, 0);
+  const auto stat_array = get_information(target, command->conditions, INITIAL_LEVEL, max_depth);
 
   // output rule. Values must be padded
   // Starts with the default column name
@@ -465,7 +472,8 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command) {
 static std::vector<struct StatResult *> * get_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint16_t current_level
+   std::uint16_t current_level,
+   std::uint16_t max_depth
 ) {
 
    stat_buffer_t stat_buffer;
@@ -480,8 +488,8 @@ static std::vector<struct StatResult *> * get_information(
   if (IS_DIRECTORY(get_mode(stat_buffer))) {
     // directory
     // goes recursively
-    if (should_go_recursive(current_level, conditions)) {
-      return get_directory_information(name, conditions, current_level);
+    if (should_go_recursive(current_level, max_depth)) {
+      return get_directory_information(name, conditions, current_level, max_depth);
     } else {
       // didnt match the level criteria, will not go recursively
       return new std::vector<struct StatResult *>;
@@ -615,7 +623,8 @@ static std::vector<struct StatResult *> * get_information(
 static std::vector<struct StatResult *> * get_directory_information(
    std::string name,
    Termsequel::ConditionList *conditions,
-   std::uint16_t current_level
+   std::uint16_t current_level,
+   std::uint16_t max_depth
 ) {
 
 #ifdef __linux__
@@ -643,7 +652,7 @@ static std::vector<struct StatResult *> * get_directory_information(
     std::string relative_path = name + "/" + directory_entry->d_name;
 
     // since, it will go recursively, we increment the actual level
-    auto info_vector = get_information(relative_path, conditions, current_level + 1);
+    auto info_vector = get_information(relative_path, conditions, current_level + 1, max_depth);
     for (auto element : *info_vector) vector->push_back(element);
 
     // deletes the old vector
@@ -671,7 +680,7 @@ static std::vector<struct StatResult *> * get_directory_information(
    std::string relative_path = name + FILE_SEPARATOR + entry_file.name;
    // since, it will go recursively, we increment the actual level
 
-   auto info_vector = get_information(relative_path, conditions, current_level + 1);
+   auto info_vector = get_information(relative_path, conditions, current_level + 1, max_depth);
    for (auto element : *info_vector) vector->push_back(element);
 
    delete info_vector;
@@ -914,32 +923,9 @@ static bool should_return(
 
 static bool should_go_recursive(
    std::uint16_t current_level,
-   struct Termsequel::ConditionList *condition_list
+   std::uint16_t max_depth
 ) {
-  if (!condition_list) return true;
-
-  for (auto index = 0UL; index < condition_list->conditions.size(); index++) {
-      const auto condition = condition_list->conditions[index];
-      switch (condition->column) {
-      case Termsequel::COLUMN_TYPE::LEVEL:
-         if (condition->operator_value == Termsequel::Operator::LESS) {
-            std::int64_t value = std::atoll(condition->value.c_str());
-            return current_level < value;
-         } else if (condition->operator_value == Termsequel::Operator::LESS_OR_EQUAL) {
-            std::int64_t value = std::atoll(condition->value.c_str());
-            return current_level <= value;
-         } else if (condition->operator_value == Termsequel::Operator::EQUAL) {
-            std::int64_t value = std::atoll(condition->value.c_str());
-            return current_level <= value;
-         } else {
-            // should continue to go recursively
-            return true;
-         }
-      default:
-         break;
-    }
-  }
-  return true;
+   return current_level < max_depth;
 }
 
 bool compare (

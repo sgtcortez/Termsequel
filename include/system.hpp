@@ -75,7 +75,10 @@ namespace Termsequel {
       public:
 
          // Executes the command, and return the list of elements
-         static bool execute(const SystemCommand *command);
+         static bool execute(
+            const SystemCommand *command,
+            std::uint16_t max_depth
+         );
    };
 
 }

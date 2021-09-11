@@ -127,4 +127,5 @@ Contains information about the versions of Termsequel
         There is a list of fix that were fixed in this release.   
         | Fix | Issue | Pull Request |
         | :-:   | :-: | :-: |
-        | Windows, does not have the implemention of [getopt](https://www.man7.org/linux/man-pages/man3/getopt.3.html), so, we could not use for example: `$ termsequel -h` to see the help ... | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/88) | [PR](https://github.com/sgtcortez/Termsequel/pull/90)
+        | Windows, does not have the implemention of [getopt](https://www.man7.org/linux/man-pages/man3/getopt.3.html), so, we could not use for example: `$ termsequel -h` to see the help ... | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/88) | [PR](https://github.com/sgtcortez/Termsequel/pull/90)  |
+        | Max level is now a command line argument, instead of a filter condition | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/80) | [PR](https://github.com/sgtcortez/Termsequel/pull/92) |
