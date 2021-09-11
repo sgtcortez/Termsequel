@@ -1,19 +1,12 @@
 #include <cstdio>
-
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
 
-#ifdef __linux__
-   #include <unistd.h>
-   static constexpr const char *short_options = "hv";
-
-#elif defined (_WIN32)
-
-#endif
-
 #include "include/compiler.hpp"
+#include "include/command-line.hpp"
+
 #include "termsequel.hpp"
 
 using namespace Termsequel;
@@ -32,49 +25,27 @@ int main (
    struct SystemCommand *command;
    bool ok = false;
 
-#ifdef __linux__
+   // the last argument, will always be the SQL instruction ...
+   std::string sql = argv[argc - 1];
 
-   int option;
-
-   while ( (option = getopt(argc, argv, short_options)) != -1 ) {
-
-      switch (option) {
-         case 'h':
-            // show help and exits
-            show_help(binary_name, stdout);
-            return 0;
-         }
+   // ignores the binary name ...
+   CommandLineParser parser(argv + 1, argc - 1);
+   while (parser.has_next()) {
+      std::string result = parser.parse();
+      if ( result == "-h" || result == "--help" ) {
+         show_help(binary_name, stdout);
+         return 0;
+      } else if ( result[0] == '-' ) {
+         std::cerr << "Invalid option: \"" << result << "\" ..." << std::endl;
+         show_help(binary_name, stderr);
+         return 1;
       }
-
-   if (optind == argc) {
-      // invalid. SQL wasnt provided
-      show_help(binary_name, stderr);
-      return 1;
-   } else {
-      std::string sql = argv[argc - 1];
-      Compiler compiler(sql);
-      command = compiler.compile();
-      if (command) ok = System::execute(command);
-      else return 1;
    }
 
-#elif defined(_WIN32)
-
-   // I do not know if windows has somethig like getopt
-
-   if (argc == 1) {
-      // invalid. SQL wasnt provided
-      show_help(binary_name, stderr);
-      return 1;
-   } else {
-      std::string sql = argv[argc - 1];
-      Compiler compiler(sql);
-      command = compiler.compile();
-      if (command) ok = System::execute(command);
-      else return 1;
-   }
-
-#endif
+   Compiler compiler(sql);
+   command = compiler.compile();
+   if (command) ok = System::execute(command);
+   else return 1;
 
    if (command->conditions) {
       // Use LVALUE to avoid copying ...
@@ -95,9 +66,9 @@ void show_help(
     FILE *stream
 ) {
     std::string message =
-        "Usage: %s [-h] SQL"
+        "Usage: %s [-h | --help] SQL"
         "\nOptions:"
-        "\n -h Show this help."
+        "\n -h, --help Show this help and exit."
         "\nColumns available:"
         "\n NAME               Filename"
         "\n SIZE               Filesize"
@@ -116,7 +87,7 @@ void show_help(
         "\nSQL instructions available"
         "\n SELECT Example: SELECT NAME FROM DIRECTORY"
          "\nCompiled at: %s:%s"
-#if defined(TERMSEQUEL_VERSION_PATCH) && (TERMSEQUEL_VERSION_PATCH > 0)
+#if defined(TERMSEQUEL_VERSION_PATCH) && (TERMSEQUEL_VERSION_PATCH + 0 > 0)
          "\nVersion: %d.%d.%d\n";
          fprintf(stream, message.c_str(), filename,  __DATE__, __TIME__, TERMSEQUEL_VERSION_MAJOR, TERMSEQUEL_VERSION_MINOR, TERMSEQUEL_VERSION_PATCH);
 #else

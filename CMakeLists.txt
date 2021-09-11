@@ -13,6 +13,7 @@ set(
     src/lexeme.cpp
     src/lexical.cpp
     src/syntax.cpp
+    src/command-line.cpp
     termsequel.cpp
 )
 
