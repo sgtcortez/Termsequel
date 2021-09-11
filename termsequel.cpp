@@ -1,8 +1,10 @@
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <limits.h>
 
 #include "include/compiler.hpp"
 #include "include/command-line.hpp"
@@ -24,6 +26,7 @@ int main (
    char *binary_name = argv[0];
    struct SystemCommand *command;
    bool ok = false;
+   std::uint16_t max_depth = USHRT_MAX;
 
    // the last argument, will always be the SQL instruction ...
    std::string sql = argv[argc - 1];
@@ -35,6 +38,25 @@ int main (
       if ( result == "-h" || result == "--help" ) {
          show_help(binary_name, stdout);
          return 0;
+      } else if (result == "-n" || result == "--max-depth") {
+         if (parser.has_next()) {
+            // atoi returns 0 if string is not a number
+            int value = std::atoi(parser.parse().c_str());
+            if (value <= 0) {
+               // invalid. Should be positive ...
+               std::cerr << "Max depth should have a value greater than 0 ..." << std::endl;
+               show_help(binary_name, stderr);
+               return 1;
+            }
+            max_depth = (std::uint16_t) value;
+         } else {
+            // expected value ...
+            std::cerr << "The option: \"" << result << "\" requires an value. I.e: --max-depth 3 ..." << std::endl;
+            show_help(binary_name, stderr);
+            return 1;
+         }
+
+
       } else if ( result[0] == '-' ) {
          std::cerr << "Invalid option: \"" << result << "\" ..." << std::endl;
          show_help(binary_name, stderr);
@@ -44,7 +66,7 @@ int main (
 
    Compiler compiler(sql);
    command = compiler.compile();
-   if (command) ok = System::execute(command);
+   if (command) ok = System::execute(command, max_depth);
    else return 1;
 
    if (command->conditions) {
@@ -66,9 +88,10 @@ void show_help(
     FILE *stream
 ) {
     std::string message =
-        "Usage: %s [-h | --help] SQL"
+        "Usage: %s [Options] SQL"
         "\nOptions:"
-        "\n -h, --help Show this help and exit."
+        "\n -h, --help      Show this help and exit."
+        "\n -n, --max-depth Set the maximum depth when going recursively."
         "\nColumns available:"
         "\n NAME               Filename"
         "\n SIZE               Filesize"
