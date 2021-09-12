@@ -71,6 +71,20 @@ $ termsequel -h
     SELECT NAME, ABSOLUTE_PATH FROM $HOME WHERE NAME ENDS_WITH .pdf AND OWNER_PERMISSION CONTAINS X
     ```
 
+    **Example:** Select from directory that user do not has full access(for example, the /tmp directory).   
+    ```sql
+    SELECT * FROM /tmp 
+    -- This might return some lines with error information, something like: Could not get the real path of <file>
+    -- this happens, because, the user do not have read access to this file.  
+    ```
+
+    **Example:** You can ignore error messages, if you want, but, you'll need the help from your operating system ...
+    ```bash
+    $ termsequel 'SELECT * FROM /tmp' 2>/dev/null
+    # When an error occurr, we print it to the stderr buffer ...
+    # so, you can ignore those error messages redirecting them to null(special device), or, to a log file ...
+    ```
+
 # Wiki
 
 The [wiki](https://github.com/sgtcortez/Termsequel/wiki) page contains the documentation of the termsequel.   
