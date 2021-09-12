@@ -12,7 +12,6 @@
 #include <sstream>
 #include <streambuf>
 #include <string>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
 #include <time.h>
@@ -84,6 +83,7 @@ constexpr static const char FILE_SEPARATOR = '/';
 
 #include <io.h> // _findfirst _findnext
 #include <windows.h>  // GetFullPathName
+#include <sys/stat.h>
 
 #define IS_DIRECTORY(bitset) (bitset & _S_IFDIR)
 #define FILE_TYPE_MASK _S_IFMT
