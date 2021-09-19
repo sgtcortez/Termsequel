@@ -28,6 +28,9 @@ void append_action(
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::FILENAME);
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::FILESIZE);
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::OWNER);
+#ifdef __linux__
+               system_command->columns.push_back(Termsequel::COLUMN_TYPE::GROUP);
+#endif
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::LEVEL);
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::FILE_TYPE);
                system_command->columns.push_back(Termsequel::COLUMN_TYPE::OWNER_PERMISSIONS);
@@ -48,6 +51,9 @@ void append_action(
                if      ( Termsequel::LexemeType::NAME               == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::FILENAME;
                else if ( Termsequel::LexemeType::SIZE               == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::FILESIZE;
                else if ( Termsequel::LexemeType::OWNER              == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::OWNER;
+#ifdef __linux__
+               else if ( Termsequel::LexemeType::GROUP              == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::GROUP;
+#endif
                else if ( Termsequel::LexemeType::LEVEL              == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::LEVEL;
                else if ( Termsequel::LexemeType::FILE_TYPE          == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::FILE_TYPE;
                else if ( Termsequel::LexemeType::OWNER_PERMISSIONS  == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::OWNER_PERMISSIONS;

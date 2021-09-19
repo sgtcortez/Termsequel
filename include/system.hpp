@@ -18,6 +18,9 @@ namespace Termsequel {
       FILENAME,  // name of the file
       FILESIZE,  // size of the file,
       OWNER,     // owner of the file
+#ifdef __linux__
+      GROUP,     // group owner of the file
+#endif
       LEVEL,     // level of file in the deepth directory search
       FILE_TYPE, // type of the file. Regular file, directory etc ...
       OWNER_PERMISSIONS, // permissions of the owner

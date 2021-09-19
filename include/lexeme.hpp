@@ -37,6 +37,9 @@ namespace Termsequel {
          static const LexemeType NAME;
          static const LexemeType SIZE;
          static const LexemeType OWNER;
+#ifdef __linux__
+         static const LexemeType GROUP;
+#endif
          static const LexemeType LEVEL;
          static const LexemeType FILE_TYPE;
          static const LexemeType OWNER_PERMISSIONS;

@@ -101,6 +101,11 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
             The owner of the file.
 
+        + GROUP
+
+            The group owner of the file.  
+            **Obs:** Only available for Linux.
+
         + LEVEL
 
             The depth level. Considering the from value as the relative path(if a directory).
