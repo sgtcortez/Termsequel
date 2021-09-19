@@ -12,6 +12,9 @@ std::shared_ptr<Termsequel::Lexeme>  parse_lexeme(const std::string string) {
    else if ( string.compare("NAME")                 == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::NAME);
    else if ( string.compare("SIZE")                 == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::SIZE);
    else if ( string.compare("OWNER")                == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::OWNER);
+#ifdef __linux__
+   else if ( string.compare("GROUP")                == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::GROUP);
+#endif
    else if ( string.compare("LEVEL")                == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::LEVEL);
    else if ( string.compare("FILE_TYPE")            == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::FILE_TYPE);
    else if ( string.compare("OWNER_PERMISSIONS")    == 0 ) return std::make_shared<Termsequel::Lexeme>(Termsequel::LexemeType::OWNER_PERMISSIONS);

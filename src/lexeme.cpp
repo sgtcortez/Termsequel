@@ -47,6 +47,9 @@ namespace Termsequel {
    LexemeType const LexemeType::NAME               ( LexemeKey::COLUMN,      "NAME");
    LexemeType const LexemeType::SIZE               ( LexemeKey::COLUMN,      "SIZE");
    LexemeType const LexemeType::OWNER              ( LexemeKey::COLUMN,      "OWNER");
+#ifdef __linux__
+   LexemeType const LexemeType::GROUP              ( LexemeKey::COLUMN,      "GROUP");
+#endif
    LexemeType const LexemeType::LEVEL              ( LexemeKey::COLUMN,      "LEVEL");
    LexemeType const LexemeType::FILE_TYPE          ( LexemeKey::COLUMN,      "FILE_TYPE");
    LexemeType const LexemeType::OWNER_PERMISSIONS  ( LexemeKey::COLUMN,      "OWNER_PERMISSIONS");

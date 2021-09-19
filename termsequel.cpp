@@ -96,6 +96,9 @@ void show_help(
         "\n NAME               Filename"
         "\n SIZE               Filesize"
         "\n OWNER              File owner"
+#ifdef __linux__
+        "\n GROUP              Group owner"
+#endif
         "\n FILE_TYPE          Filetype"
         "\n LEVEL              Depth level"
         "\n OWNER_PERMISSIONS  Owner permissions"

@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <pwd.h>     // getpwuid
+#include <grp.h>     // getgrnam
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <linux/stat.h>
@@ -49,6 +50,10 @@ typedef struct statx stat_buffer_t;
 
 static constexpr std::uint32_t get_uid(stat_buffer_t &buffer) {
    return buffer.stx_uid;
+}
+
+static constexpr std::uint32_t get_gid(stat_buffer_t &buffer) {
+   return buffer.stx_gid;
 }
 
 static constexpr std::uint16_t get_mode(stat_buffer_t &buffer) {
@@ -166,6 +171,10 @@ struct StatResult {
   // The file owner
   std::string owner;
 
+#ifdef __linux__
+   std::string group;
+#endif
+
   // does not return from stat
   std::string filename;
 
@@ -231,6 +240,11 @@ static std::string get_variable_value(std::string name);
  */
 static std::string get_owner_name(uid_t owner);
 
+/**
+ * Returns the group name of the file
+*/
+static std::string get_group_name(gid_t group);
+
 #endif
 
 bool compare(
@@ -277,6 +291,9 @@ bool Termsequel::System::execute(
   std::size_t bigger_filename = strlen("Filename");
   std::size_t bigger_column = strlen("Size");
   std::size_t bigger_owner = strlen("Owner");
+#ifdef __linux__
+   std::size_t bigger_group = strlen("Group");
+#endif
   std::size_t bigger_level = strlen("Level");
   std::size_t bigger_file_type = strlen("File Type");
   std::size_t bigger_last_modification = strlen("Last Modification");
@@ -302,6 +319,13 @@ bool Termsequel::System::execute(
           bigger_owner = stat_element->owner.size();
         }
       }
+#ifdef __linux__
+      if ( column == COLUMN_TYPE::GROUP ) {
+         if (stat_element->group.size() > bigger_group) {
+            bigger_group = stat_element->group.size();
+         }
+      }
+#endif
       if (column == COLUMN_TYPE::LEVEL) {
         std::string number_string = std::to_string(stat_element->level);
         if (number_string.size() > bigger_level) {
@@ -356,6 +380,12 @@ bool Termsequel::System::execute(
          header.append(" Owner");
          header.insert(header.end(), bigger_owner - strlen("Owner"), ' ');
       }
+#ifdef __linux__
+      if ( column == COLUMN_TYPE::GROUP) {
+         header.append(" Group");
+         header.insert(header.end(), bigger_group - strlen("Group"), ' ');
+      }
+#endif
       if (column == COLUMN_TYPE::LEVEL) {
          header.append(" Level");
          header.insert(header.end(), bigger_level - strlen("Level"), ' ');
@@ -413,6 +443,13 @@ bool Termsequel::System::execute(
             string.append(stat_element->owner);
             string.insert(string.end(), bigger_owner - stat_element->owner.size(), ' ');
          }
+#ifdef __linux__
+         if (column == COLUMN_TYPE::GROUP) {
+            string.push_back(' ');
+            string.append(stat_element->group);
+            string.insert(string.end(), bigger_group - stat_element->group.size(), ' ');
+         }
+#endif
          if (column == COLUMN_TYPE::LEVEL) {
             std::string column_value = std::to_string(stat_element->level);
             string.push_back(' ');
@@ -506,6 +543,7 @@ static std::vector<struct StatResult *> * get_information(
   stat_value->size = get_size(stat_buffer);
 #ifdef __linux__
   stat_value->owner = get_owner_name(get_uid(stat_buffer));
+  stat_value->group = get_group_name(get_gid(stat_buffer));
 #elif defined(_WIN32)
   stat_value->owner = "Not available";
 #endif
@@ -700,6 +738,12 @@ static std::string get_owner_name(uid_t owner) {
    std::string result = user->pw_name;
    return result;
 }
+
+static std::string get_group_name(gid_t group) {
+   struct group *group_ptr = getgrgid(group);
+   return group_ptr->gr_name;
+}
+
 #endif
 
 static bool should_return(
@@ -731,6 +775,11 @@ static bool should_return(
       case Termsequel::COLUMN_TYPE::OWNER:
          compare_value.string_value = row->owner.c_str();
          break;
+#ifdef __linux__
+      case Termsequel::COLUMN_TYPE::GROUP:
+         compare_value.string_value = row->group.c_str();
+         break;
+#endif
       case Termsequel::COLUMN_TYPE::LEVEL:
          compare_value.integer_value = row->level;
          compare_string = false;
