@@ -541,12 +541,12 @@ static std::vector<struct StatResult *> * get_information(
 
    auto date = localtime(&(modification_date));
 
-   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", date);
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%dT%H:%M:%S", date);
    stat_value->last_modification = buffer;
 
    date = localtime(&(creation_date));
 
-   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%d %H:%M:%S", date);
+   std::strftime(buffer, sizeof(buffer) / sizeof(buffer[0]), "%Y-%m-%dT%H:%M:%S", date);
    stat_value->creation_date = buffer;
 
 
