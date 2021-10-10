@@ -94,3 +94,11 @@ Contains information about the versions of Termsequel
         | Bug | Issue | Pull Request |
         | :-:   | :-: | :-: | :-: |    
         | Double declaration of statx structure | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/93) | [PR](https://github.com/sgtcortez/Termsequel/pull/94) |
+
+- Release 1.1.3
+
+    - Bug Fixes
+
+        | Bug | Issue | Pull Request |
+        | :-:   | :-: | :-: |
+        | Whitespace between date & time information | [ISSUE](https://github.com/sgtcortez/Termsequel/issues/91) | [PR](https://github.com/sgtcortez/Termsequel/pull/99) |    
