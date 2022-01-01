@@ -1,5 +1,7 @@
 #include "lexical.hpp"
 #include "lexeme.hpp"
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <memory>
 
@@ -9,63 +11,73 @@ Termsequel::Lexical::Lexical(const std::string raw_input) {
   convert_input(raw_input);
 };
 
+// C++ standard library does not have an ignore case string comparasion
+// https://stackoverflow.com/a/4119881/12873636
+static bool string_equals(const std::string &a, const std::string b) {
+  return a.size() == b.size() &&
+         std::equal(a.begin(), a.end(), b.begin(),
+                    [](unsigned char a, unsigned char b) {
+                      return std::toupper(a) == b;
+                    });
+}
+
 std::shared_ptr<Termsequel::Lexeme> parse_lexeme(const std::string string) {
-  if (string.compare("SELECT") == 0)
+  if (string_equals(string, "SELECT"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::SELECT);
   else if (string.compare("*") == 0)
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::STAR);
-  else if (string.compare("NAME") == 0)
+  else if (string_equals(string, "NAME"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::NAME);
-  else if (string.compare("SIZE") == 0)
+  else if (string_equals(string, "SIZE"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::SIZE);
-  else if (string.compare("OWNER") == 0)
+  else if (string_equals(string, "OWNER"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::OWNER);
 #ifdef __linux__
-  else if (string.compare("GROUP") == 0)
+  else if (string_equals(string, "GROUP"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::GROUP);
 #endif
-  else if (string.compare("LEVEL") == 0)
+  else if (string_equals(string, "LEVEL"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::LEVEL);
-  else if (string.compare("FILE_TYPE") == 0)
+  else if (string_equals(string, "FILE_TYPE"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::FILE_TYPE);
-  else if (string.compare("OWNER_PERMISSIONS") == 0)
+  else if (string_equals(string, "OWNER_PERMISSIONS"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::OWNER_PERMISSIONS);
 #ifdef __linux__
-  else if (string.compare("GROUP_PERMISSIONS") == 0)
+  else if (string_equals(string, "GROUP_PERMISSIONS"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::GROUP_PERMISSIONS);
-  else if (string.compare("OTHERS_PERMISSIONS") == 0)
+  else if (string_equals(string, "OTHERS_PERMISSIONS"))
     return std::make_shared<Termsequel::Lexeme>(
         lexeme_type::OTHERS_PERMISSIONS);
 #endif
-  else if (string.compare("LAST_MODIFICATION") == 0)
+  else if (string_equals(string, "LAST_MODIFICATION"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::LAST_MODIFICATION);
-  else if (string.compare("CREATION_DATE") == 0)
+  else if (string_equals(string, "CREATION_DATE"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::CREATION_DATE);
-  else if (string.compare("RELATIVE_PATH") == 0)
+  else if (string_equals(string, "RELATIVE_PATH"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::RELATIVE_PATH);
-  else if (string.compare("ABSOLUTE_PATH") == 0)
+  else if (string_equals(string, "ABSOLUTE_PATH"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::ABSOLUTE_PATH);
   else if (string.compare(",") == 0)
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::COMMA);
-  else if (string.compare("FROM") == 0)
+  else if (string_equals(string, "FROM"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::FROM);
-  else if (string.compare("WHERE") == 0)
+  else if (string_equals(string, "WHERE"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::WHERE);
   else if (string.compare("=") == 0)
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::EQUAL);
   else if (string.compare("!=") == 0)
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::NOT_EQUAL);
-  else if (string.compare("STARTS_WITH") == 0)
+  else if (string_equals(string, "STARTS_WITH"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::STARTS_WITH);
-  else if (string.compare("NOT_STARTS_WITH") == 0)
+  else if (string_equals(string, "NOT_STARTS_WITH"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::NOT_STARTS_WITH);
-  else if (string.compare("ENDS_WITH") == 0)
+  else if (string_equals(string, "ENDS_WITH"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::ENDS_WITH);
-  else if (string.compare("NOT_ENDS_WITH") == 0)
+  else if (string_equals(string, "NOT_ENDS_WITH"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::NOT_ENDS_WITH);
-  else if (string.compare("CONTAINS") == 0)
+  else if (string_equals(string, "CONTAINS"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::CONTAINS);
-  else if (string.compare("NOT_CONTAINS") == 0)
+  else if (string_equals(string, "NOT_CONTAINS"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::NOT_CONTAINS);
   else if (string.compare(">") == 0)
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::BIGGER);
@@ -75,9 +87,9 @@ std::shared_ptr<Termsequel::Lexeme> parse_lexeme(const std::string string) {
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::BIGGER_OR_EQUAL);
   else if (string.compare("<=") == 0)
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::LESS_OR_EQUAL);
-  else if (string.compare("AND") == 0)
+  else if (string_equals(string, "AND"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::AND);
-  else if (string.compare("OR") == 0)
+  else if (string_equals(string, "OR"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::OR);
   return std::make_shared<Termsequel::Lexeme>(lexeme_type::IDENTIFIER, string);
 }
