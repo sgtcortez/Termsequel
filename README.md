@@ -82,7 +82,7 @@ $ termsequel 'SELECT NAME FROM /HOME'
     
     - ### Columns
 
-        The columns, is what you can obtain(just obtain, because where is not supported yet) of information in a command.
+        The columns, is what you can obtain or use to filter.
     
         * NAME
 
@@ -112,19 +112,16 @@ $ termsequel 'SELECT NAME FROM /HOME'
         + OWNER_PERMISSIONS
 
             Returns the permissions of the owner of the file.     
-            The value, must be in octal mode!
 
         + GROUP_PERMISSIONS
 
-            **Just for Linux**.    
             Returns the permissions of the group of the file.     
-            The value, must be in octal mode!
-
+            **Obs:** Only available for Linux.
+                        
         + OTHERS_PERMISSIONS
 
-            **Just for Linux**.    
             Returns the permissions of other users.    
-            The value, must be in octal mode!
+            **Obs:** Only available for Linux.
 
         + LAST_MODIFICATION
 
