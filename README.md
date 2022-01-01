@@ -1,4 +1,5 @@
 # Summary
+
 - [Termsequel](#Termsequel)    
     - [What is](#What-is)    
     - [Dependencies](#Dependencies)
@@ -15,6 +16,7 @@
 - [Developers](#Developers)
 
 # Termsequel
+
 Bringing SQL to our filesystem.      
 ![Termsequel](./.assets/Termsequel-logo.png)
 
@@ -22,9 +24,7 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel) 
 
 - ## What is
 
-    Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.  
-    
-
+    Termsequel, is an ideia that I have been thought a time ago(since, 2018 I guess), but, I had no ideia in how to implement it.     
 
 - ## Dependencies
 
@@ -65,6 +65,7 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel) 
     Since, this project is easy for CMake, it can detect the operating system and the available compiler.
 
 # Users
+
 Some advices to run **Termsequel**.   
 The system is not thread safe, because, there is no need to this. Well, at least for now.    
 
