@@ -64,11 +64,6 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel) 
     ```
     Since, this project is easy for CMake, it can detect the operating system and the available compiler.
 
-    **Obs:** If you are in linux, and, do not have CMake, but, you have make installed, then, you can simple run `make` at the project root:  
-    ```shell
-    $ make 
-    ```
-
 # Users
 Some advices to run **Termsequel**.   
 The system is not thread safe, because, there is no need to this. Well, at least for now.    
