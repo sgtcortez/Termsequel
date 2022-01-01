@@ -238,12 +238,14 @@ $ termsequel 'SELECT NAME FROM /HOME'
 
 
 # Developers
+
 There are sections for developers to be able to join this project.
 
-<details>
-<summary>
-Git Guidelines
-</summary>
-Feature branch <strong>must</strong> be created from the most stable branch(usually main), and, when done, should make a Pull Request to the <strong>development</strong> branch.  
-The commits <strong>must</strong> be <strong><italic>"squashed"</italic></strong>. The person who accepts the pull request, must, do a rebase to pick the single commit and put it on the target branch. 
-</details>
+- Git Guidelines
+
+    Feature branch **must** be created from the most stable branch(usually main), and, when done, should make a Pull Request to the development branch.  
+    The commits **must be** *"squashed"*. The person who accepts the pull request, must, do a rebase to pick the single commit and put it on the target branch. 
+
+- Code Style
+
+    We are using the LLVM coding style in our project.

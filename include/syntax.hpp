@@ -5,13 +5,12 @@
 
 namespace Termsequel {
 
-   class Syntax final {
+class Syntax final {
 
-      public:
-         bool analyse(Termsequel::Lexical &lexical) const;
-
-   };
-
+public:
+  bool analyse(Termsequel::Lexical &lexical) const;
 };
+
+}; // namespace Termsequel
 
 #endif
