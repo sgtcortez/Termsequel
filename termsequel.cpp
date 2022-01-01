@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <limits.h>
 
@@ -15,7 +16,7 @@ using namespace Termsequel;
 
 void show_help(
     char *filename,
-    FILE *stream  // TODO: Use c++ cout/cerr
+    const bool error
 );
 
 int main (
@@ -36,7 +37,7 @@ int main (
    while (parser.has_next()) {
       std::string result = parser.parse();
       if ( result == "-h" || result == "--help" ) {
-         show_help(binary_name, stdout);
+         show_help(binary_name, false);
          return 0;
       } else if (result == "-n" || result == "--max-depth") {
          if (parser.has_next()) {
@@ -45,21 +46,21 @@ int main (
             if (value <= 0) {
                // invalid. Should be positive ...
                std::cerr << "Max depth should have a value greater than 0 ..." << std::endl;
-               show_help(binary_name, stderr);
+               show_help(binary_name, true);
                return 1;
             }
             max_depth = (std::uint16_t) value;
          } else {
             // expected value ...
             std::cerr << "The option: \"" << result << "\" requires an value. I.e: --max-depth 3 ..." << std::endl;
-            show_help(binary_name, stderr);
+            show_help(binary_name, true);
             return 1;
          }
 
 
       } else if ( result[0] == '-' ) {
          std::cerr << "Invalid option: \"" << result << "\" ..." << std::endl;
-         show_help(binary_name, stderr);
+         show_help(binary_name, true);
          return 1;
       }
    }
@@ -85,39 +86,38 @@ int main (
 
 void show_help(
     char *filename,
-    FILE *stream
+    const bool error
 ) {
-    std::string message =
-        "Usage: %s [Options] SQL"
-        "\nOptions:"
-        "\n -h, --help      Show this help and exit."
-        "\n -n, --max-depth Set the maximum depth when going recursively."
-        "\nColumns available:"
-        "\n NAME               Filename"
-        "\n SIZE               Filesize"
-        "\n OWNER              File owner"
+   std::ostream & output = error ? std::cerr : std::cout;
+   output << "Usage: " << filename <<  " [-h, --help] [-n, --max-depth] SQL";
+   output << "\nOptions:";
+   output << "\n -h, --help Show this help and exit.";
+   output << "\n -n, --max-depth Set the maximum depth when going recursively.";
+   output << "\nColumns available:";
+   output << "\n NAME               Filename";
+   output << "\n SIZE               Filesize";
+   output << "\n OWNER              File owner";
 #ifdef __linux__
-        "\n GROUP              Group owner"
+   output << "\n GROUP              Group owner";
 #endif
-        "\n FILE_TYPE          Filetype"
-        "\n LEVEL              Depth level"
-        "\n OWNER_PERMISSIONS  Owner permissions"
+   output << "\n FILE_TYPE          Filetype";
+   output << "\n LEVEL              Depth level";
+   output << "\n OWNER_PERMISSIONS  Owner permissions";
 #ifdef __linux__
-        "\n GROUP_PERMISSIONS  Group permissions"
-        "\n OTHERS_PERMISSIONS Others permissions"
+   output << "\n GROUP_PERMISSIONS  Group permissions";
+   output << "\n OTHERS_PERMISSIONS Others permissions";
 #endif
-        "\n LAST_MODIFICATION  The last modification of the file"
-        "\n CREATION_DATE      The creation date of the file"
-        "\n RELATIVE_PATH      The relative path of the file"
-        "\n ABSOLUTE_PATH      The absolute path of the file"
-        "\nSQL instructions available"
-        "\n SELECT Example: SELECT NAME FROM DIRECTORY"
-         "\nCompiled at: %s:%s"
+   output << "\n LAST_MODIFICATION  The last modification of the file";
+   output << "\n CREATION_DATE      The creation date of the file";
+   output << "\n RELATIVE_PATH      The relative path of the file";
+   output << "\n ABSOLUTE_PATH      The absolute path of the file";
+   output << "\nSQL instructions available";
+   output << "\n SELECT Example: SELECT NAME FROM DIRECTORY";
+   output << "\nCompiled at: " << __DATE__ << " " << __TIME__;
 #if defined(TERMSEQUEL_VERSION_PATCH) && (TERMSEQUEL_VERSION_PATCH + 0 > 0)
-         "\nVersion: %d.%d.%d\n";
-         fprintf(stream, message.c_str(), filename,  __DATE__, __TIME__, TERMSEQUEL_VERSION_MAJOR, TERMSEQUEL_VERSION_MINOR, TERMSEQUEL_VERSION_PATCH);
+   output << "\nVersion: " << TERMSEQUEL_VERSION_MAJOR << "." << TERMSEQUEL_VERSION_MINOR << "." << TERMSEQUEL_VERSION_PATCH;
 #else
-         "\nVersion: %d.%d\n";
-         fprintf(stream, message.c_str(), filename, __DATE__, __TIME__, TERMSEQUEL_VERSION_MAJOR, TERMSEQUEL_VERSION_MINOR );
+   output << "\nVersion: " << TERMSEQUEL_VERSION_MAJOR << "." << TERMSEQUEL_VERSION_MINOR;
 #endif
+   output << std::endl;
 }
