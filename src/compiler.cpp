@@ -9,6 +9,10 @@
 #include <iostream>
 #include <memory>
 
+using column_type  = Termsequel::COLUMN_TYPE;
+using lexeme       = Termsequel::LexemeType;
+using lexeme_key   = Termsequel::LexemeKey;
+using operator_key = Termsequel::Operator;
 
 Termsequel::Compiler::Compiler(std::string raw_input) {
     this->raw_input = raw_input;
@@ -20,51 +24,51 @@ void append_action(
 ) {
 
    switch (lexeme->get_type().get_key()) {
-      case Termsequel::LexemeKey::OPERATION:
+      case lexeme_key::OPERATION:
          system_command->command = Termsequel::COMMAND_TYPE::LIST;
          break;
-      case Termsequel::LexemeKey::COLUMN:
-            if ( Termsequel::LexemeType::STAR == lexeme->get_type()) {
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::FILENAME);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::FILESIZE);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::OWNER);
+      case lexeme_key::COLUMN:
+            if ( lexeme::STAR == lexeme->get_type()) {
+               system_command->columns.push_back(column_type::FILENAME);
+               system_command->columns.push_back(column_type::FILESIZE);
+               system_command->columns.push_back(column_type::OWNER);
 #ifdef __linux__
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::GROUP);
+               system_command->columns.push_back(column_type::GROUP);
 #endif
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::LEVEL);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::FILE_TYPE);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::OWNER_PERMISSIONS);
+               system_command->columns.push_back(column_type::LEVEL);
+               system_command->columns.push_back(column_type::FILE_TYPE);
+               system_command->columns.push_back(column_type::OWNER_PERMISSIONS);
 #ifdef __linux__
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::GROUP_PERMISSIONS);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::OTHERS_PERMISSIONS);
+               system_command->columns.push_back(column_type::GROUP_PERMISSIONS);
+               system_command->columns.push_back(column_type::OTHERS_PERMISSIONS);
 #endif
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::LAST_MODIFICATION);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::CREATION_DATE);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::RELATIVE_PATH);
-               system_command->columns.push_back(Termsequel::COLUMN_TYPE::ABSOLUTE_PATH);
+               system_command->columns.push_back(column_type::LAST_MODIFICATION);
+               system_command->columns.push_back(column_type::CREATION_DATE);
+               system_command->columns.push_back(column_type::RELATIVE_PATH);
+               system_command->columns.push_back(column_type::ABSOLUTE_PATH);
                break;
             }
 
             {
                // Can be column on column list or where filters
-               Termsequel::COLUMN_TYPE column = Termsequel::COLUMN_TYPE::FILENAME;
-               if      ( Termsequel::LexemeType::NAME               == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::FILENAME;
-               else if ( Termsequel::LexemeType::SIZE               == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::FILESIZE;
-               else if ( Termsequel::LexemeType::OWNER              == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::OWNER;
+               auto column = column_type::FILENAME;
+               if      ( lexeme::NAME               == lexeme->get_type() ) column = column_type::FILENAME;
+               else if ( lexeme::SIZE               == lexeme->get_type() ) column = column_type::FILESIZE;
+               else if ( lexeme::OWNER              == lexeme->get_type() ) column = column_type::OWNER;
 #ifdef __linux__
-               else if ( Termsequel::LexemeType::GROUP              == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::GROUP;
+               else if ( lexeme::GROUP              == lexeme->get_type() ) column = column_type::GROUP;
 #endif
-               else if ( Termsequel::LexemeType::LEVEL              == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::LEVEL;
-               else if ( Termsequel::LexemeType::FILE_TYPE          == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::FILE_TYPE;
-               else if ( Termsequel::LexemeType::OWNER_PERMISSIONS  == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::OWNER_PERMISSIONS;
+               else if ( lexeme::LEVEL              == lexeme->get_type() ) column = column_type::LEVEL;
+               else if ( lexeme::FILE_TYPE          == lexeme->get_type() ) column = column_type::FILE_TYPE;
+               else if ( lexeme::OWNER_PERMISSIONS  == lexeme->get_type() ) column = column_type::OWNER_PERMISSIONS;
 #ifdef __linux__
-               else if ( Termsequel::LexemeType::GROUP_PERMISSIONS  == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::GROUP_PERMISSIONS;
-               else if ( Termsequel::LexemeType::OTHERS_PERMISSIONS == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::OTHERS_PERMISSIONS;
+               else if ( lexeme::GROUP_PERMISSIONS  == lexeme->get_type() ) column = column_type::GROUP_PERMISSIONS;
+               else if ( lexeme::OTHERS_PERMISSIONS == lexeme->get_type() ) column = column_type::OTHERS_PERMISSIONS;
 #endif
-               else if ( Termsequel::LexemeType::LAST_MODIFICATION  == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::LAST_MODIFICATION;
-               else if ( Termsequel::LexemeType::CREATION_DATE      == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::CREATION_DATE;
-               else if ( Termsequel::LexemeType::RELATIVE_PATH      == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::RELATIVE_PATH;
-               else if ( Termsequel::LexemeType::ABSOLUTE_PATH      == lexeme->get_type() ) column = Termsequel::COLUMN_TYPE::ABSOLUTE_PATH;
+               else if ( lexeme::LAST_MODIFICATION  == lexeme->get_type() ) column = column_type::LAST_MODIFICATION;
+               else if ( lexeme::CREATION_DATE      == lexeme->get_type() ) column = column_type::CREATION_DATE;
+               else if ( lexeme::RELATIVE_PATH      == lexeme->get_type() ) column = column_type::RELATIVE_PATH;
+               else if ( lexeme::ABSOLUTE_PATH      == lexeme->get_type() ) column = column_type::ABSOLUTE_PATH;
 
                if (system_command->conditions) {
                   // will be on the where filters
@@ -78,24 +82,24 @@ void append_action(
 
             }
          break;
-      case Termsequel::LexemeKey::WHERE:
+      case lexeme_key::WHERE:
          system_command->conditions = new Termsequel::ConditionList;
          break;
-      case Termsequel::LexemeKey::COMPARASION:
+      case lexeme_key::COMPARASION:
          {
-            Termsequel::Operator operator_value;
-            if      ( Termsequel::LexemeType::EQUAL           == lexeme->get_type()) operator_value = Termsequel::Operator::EQUAL;
-            else if ( Termsequel::LexemeType::NOT_EQUAL       == lexeme->get_type()) operator_value = Termsequel::Operator::NOT_EQUAL;
-            else if ( Termsequel::LexemeType::STARTS_WITH     == lexeme->get_type()) operator_value = Termsequel::Operator::STARTS_WITH;
-            else if ( Termsequel::LexemeType::NOT_STARTS_WITH == lexeme->get_type()) operator_value = Termsequel::Operator::NOT_STARTS_WITH;
-            else if ( Termsequel::LexemeType::ENDS_WITH       == lexeme->get_type()) operator_value = Termsequel::Operator::ENDS_WITH;
-            else if ( Termsequel::LexemeType::NOT_ENDS_WITH   == lexeme->get_type()) operator_value = Termsequel::Operator::NOT_ENDS_WITH;
-            else if ( Termsequel::LexemeType::CONTAINS        == lexeme->get_type()) operator_value = Termsequel::Operator::CONTAINS;
-            else if ( Termsequel::LexemeType::NOT_CONTAINS    == lexeme->get_type()) operator_value = Termsequel::Operator::NOT_CONTAINS;
-            else if ( Termsequel::LexemeType::BIGGER          == lexeme->get_type()) operator_value = Termsequel::Operator::BIGGER;
-            else if ( Termsequel::LexemeType::LESS            == lexeme->get_type()) operator_value = Termsequel::Operator::LESS;
-            else if ( Termsequel::LexemeType::BIGGER_OR_EQUAL == lexeme->get_type()) operator_value = Termsequel::Operator::BIGGER_OR_EQUAL;
-            else if ( Termsequel::LexemeType::LESS_OR_EQUAL   == lexeme->get_type()) operator_value = Termsequel::Operator::LESS_OR_EQUAL;
+            operator_key operator_value;
+            if      ( lexeme::EQUAL           == lexeme->get_type()) operator_value = operator_key::EQUAL;
+            else if ( lexeme::NOT_EQUAL       == lexeme->get_type()) operator_value = operator_key::NOT_EQUAL;
+            else if ( lexeme::STARTS_WITH     == lexeme->get_type()) operator_value = operator_key::STARTS_WITH;
+            else if ( lexeme::NOT_STARTS_WITH == lexeme->get_type()) operator_value = operator_key::NOT_STARTS_WITH;
+            else if ( lexeme::ENDS_WITH       == lexeme->get_type()) operator_value = operator_key::ENDS_WITH;
+            else if ( lexeme::NOT_ENDS_WITH   == lexeme->get_type()) operator_value = operator_key::NOT_ENDS_WITH;
+            else if ( lexeme::CONTAINS        == lexeme->get_type()) operator_value = operator_key::CONTAINS;
+            else if ( lexeme::NOT_CONTAINS    == lexeme->get_type()) operator_value = operator_key::NOT_CONTAINS;
+            else if ( lexeme::BIGGER          == lexeme->get_type()) operator_value = operator_key::BIGGER;
+            else if ( lexeme::LESS            == lexeme->get_type()) operator_value = operator_key::LESS;
+            else if ( lexeme::BIGGER_OR_EQUAL == lexeme->get_type()) operator_value = operator_key::BIGGER_OR_EQUAL;
+            else if ( lexeme::LESS_OR_EQUAL   == lexeme->get_type()) operator_value = operator_key::LESS_OR_EQUAL;
             else {
                std::cerr << "Unmapped operator value!" << std::endl;
                break;
@@ -103,15 +107,15 @@ void append_action(
             system_command->conditions->conditions[system_command->conditions->conditions.size() - 1]->operator_value = operator_value;
          }
          break;
-      case Termsequel::LexemeKey::IDENTIFIER:
+      case lexeme_key::IDENTIFIER:
          if (system_command->conditions) {
             system_command->conditions->conditions[system_command->conditions->conditions.size() - 1]->value = *lexeme->get_value();
          } else {
             system_command->target = *lexeme->get_value();
          }
          break;
-      case Termsequel::LexemeKey::LOGICAL:
-         if (Termsequel::LexemeType::AND == lexeme->get_type()) {
+      case lexeme_key::LOGICAL:
+         if (lexeme::AND == lexeme->get_type()) {
             system_command->conditions->operators.push_back(Termsequel::LogicalOperator::AND);
          } else {
             system_command->conditions->operators.push_back(Termsequel::LogicalOperator::OR);

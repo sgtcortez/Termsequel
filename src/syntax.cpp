@@ -2,30 +2,33 @@
 #include <iostream>
 #include <iterator>
 
+#include "lexeme.hpp"
 #include "syntax.hpp"
+
+using lexeme_key = Termsequel::LexemeKey;
 
 
 bool matches(
-   const Termsequel::LexemeKey &left,
-   const Termsequel::LexemeKey &right
+   const lexeme_key &left,
+   const lexeme_key &right
 ) {
    switch (left) {
 
-      case Termsequel::LexemeKey::OPERATION:
-      case Termsequel::LexemeKey::WHERE:
-      case Termsequel::LexemeKey::COMMA:
-      case Termsequel::LexemeKey::LOGICAL:
-         return (right == Termsequel::LexemeKey::COLUMN);
+      case lexeme_key::OPERATION:
+      case lexeme_key::WHERE:
+      case lexeme_key::COMMA:
+      case lexeme_key::LOGICAL:
+         return (right == lexeme_key::COLUMN);
 
-      case Termsequel::LexemeKey::FROM:
-      case Termsequel::LexemeKey::COMPARASION:
-         return (right == Termsequel::LexemeKey::IDENTIFIER);
+      case lexeme_key::FROM:
+      case lexeme_key::COMPARASION:
+         return (right == lexeme_key::IDENTIFIER);
 
-      case Termsequel::LexemeKey::COLUMN:
-         return (right == Termsequel::LexemeKey::COMMA || right == Termsequel::LexemeKey::FROM || right == Termsequel::LexemeKey::COMPARASION);
+      case lexeme_key::COLUMN:
+         return (right == lexeme_key::COMMA || right == lexeme_key::FROM || right == lexeme_key::COMPARASION);
 
-      case Termsequel::LexemeKey::IDENTIFIER:
-         return (right == Termsequel::LexemeKey::WHERE || right == Termsequel::LexemeKey::LOGICAL);
+      case lexeme_key::IDENTIFIER:
+         return (right == lexeme_key::WHERE || right == lexeme_key::LOGICAL);
       default:
          // should not enter here
          return false;
