@@ -54,7 +54,7 @@ jobs:
       with:
         name: binaries
     - name: Get binary version
-      run: chmod +x termsequel-linux-amd64 && ./termsequel-linux-amd64 -h | tail -n1 | awk ' { print "BIN_VERSION="$2 } ' >> $GITHUB_ENV
+      run: chmod +x termsequel-linux-amd64 && ./termsequel-linux-amd64 --help | tail -n1 | awk ' { print "BIN_VERSION="$2 } ' >> $GITHUB_ENV
       shell: bash
 
     - name: Automatic Release
