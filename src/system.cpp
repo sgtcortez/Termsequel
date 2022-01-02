@@ -18,6 +18,35 @@
 #include <time.h>
 #include <vector>
 
+// defined at termsequel.cpp
+extern bool human_readable;
+extern bool use_decimal_unit;
+
+static const char decimalUnit[5][3] = {"B", "KB", "MB", "GB", "TB"};
+
+static const char binaryUnit[5][4] = {"Bit", "KiB", "MiB", "GiB", "TiB"};
+
+std::string format_number(const uint64_t size) {
+  uint8_t index = 0;
+  const uint16_t divider = use_decimal_unit ? 1000 : 1024;
+  if (human_readable) {
+    uint64_t temp = size;
+    while (temp > divider) {
+      index++;
+      temp /= divider;
+    }
+    std::string result = std::to_string(temp);
+    if (index > 0) {
+      result.append(".");
+      result.append(std::to_string(size % (index * divider)));
+    }
+    result.append(" ");
+    result.append(use_decimal_unit ? decimalUnit[index] : binaryUnit[index]);
+    return result;
+  }
+  return std::to_string(size);
+}
+
 #ifdef __linux__
 
 #include <dirent.h>
@@ -292,7 +321,7 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command,
         }
       }
       if (column == COLUMN_TYPE::FILESIZE) {
-        std::string number_string = std::to_string(stat_element->size);
+        std::string number_string = format_number(stat_element->size);
         if (number_string.size() > bigger_column) {
           bigger_column = number_string.size();
         }
@@ -422,7 +451,7 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command,
                       bigger_filename - stat_element->filename.size(), ' ');
       }
       if (column == COLUMN_TYPE::FILESIZE) {
-        std::string column_value = std::to_string(stat_element->size);
+        std::string column_value = format_number(stat_element->size);
         string.push_back(' ');
         string.append(column_value);
         string.insert(string.end(), bigger_column - column_value.size(), ' ');

@@ -14,6 +14,9 @@
 
 using namespace Termsequel;
 
+bool human_readable = false;
+bool use_decimal_unit = true;
+
 void show_help(
     char *filename,
     const bool error
@@ -36,9 +39,11 @@ int main (
    CommandLineParser parser(argv + 1, argc - 1);
    while (parser.has_next()) {
       std::string result = parser.parse();
-      if ( result == "-h" || result == "--help" ) {
+      if ( result == "--help" ) {
          show_help(binary_name, false);
          return 0;
+      } else if (result == "-h" || result == "--human-readable") {
+         human_readable = true;
       } else if (result == "-n" || result == "--max-depth") {
          if (parser.has_next()) {
             // atoi returns 0 if string is not a number
@@ -56,7 +61,21 @@ int main (
             show_help(binary_name, true);
             return 1;
          }
-
+      } else if ( result == "-b" || result == "--base" ) {
+         if (parser.has_next()) {
+            // atoi returns 0 if string is not a number
+            int value = std::atoi(parser.parse().c_str());
+            if (value == 2) {
+               use_decimal_unit = false;
+            } else if (value == 10) {
+               use_decimal_unit = true;
+            } else {
+            // invalid. Should be positive ...
+               std::cerr << "Base should be 2 or 10!" << std::endl;
+               show_help(binary_name, true);
+               return 1;
+            }
+         }
 
       } else if ( result[0] == '-' ) {
          std::cerr << "Invalid option: \"" << result << "\" ..." << std::endl;
@@ -89,10 +108,12 @@ void show_help(
     const bool error
 ) {
    std::ostream & output = error ? std::cerr : std::cout;
-   output << "Usage: " << filename <<  " [-h, --help] [-n, --max-depth] SQL";
+   output << "Usage: " << filename <<  " [--help] [-n, --max-depth] [-h, --human-readable] [-b, --base] SQL";
    output << "\nOptions:";
-   output << "\n -h, --help Show this help and exit.";
-   output << "\n -n, --max-depth Set the maximum depth when going recursively.";
+   output << "\n     --help           Show this help and exit.";
+   output << "\n -n, --max-depth      Set the maximum depth when going recursively.";
+   output << "\n -h, --human-readable Display information in a human readable format.";
+   output << "\n -b, --base           The base which the values are shown. Default is 10(decimal).";
    output << "\nColumns available:";
    output << "\n NAME               Filename";
    output << "\n SIZE               Filesize";
