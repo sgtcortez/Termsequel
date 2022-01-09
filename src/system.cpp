@@ -75,6 +75,8 @@ std::string format_number(const uint64_t size) {
 #define WRITE_PERMISSION_OTHERS S_IWOTH
 #define EXECUTE_PERMISSION_OTHERS S_IXOTH
 
+#define SET_UID_BIT S_ISUID
+
 typedef struct statx stat_buffer_t;
 
 static constexpr std::uint32_t get_uid(stat_buffer_t &buffer) {
@@ -183,11 +185,17 @@ struct StatResult {
     // owner permissions
     char owner[4];
 #ifdef __linux__
+
     // group permissions
     char group[4];
 
     // others permissions
     char others[4];
+
+    // set uid bit
+    // Possible values are: SET and NSET
+    char set_uid[5];
+
 #endif
   } permissions;
 
@@ -416,6 +424,11 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command,
     if (column == COLUMN_TYPE::OTHERS_PERMISSIONS) {
       header.append(" Others Permissions");
     }
+
+    if (column == COLUMN_TYPE::SET_UID) {
+      header.append(" Set-UID");
+    }
+
 #endif
     if (column == COLUMN_TYPE::LAST_MODIFICATION) {
       header.append(" Last Modification");
@@ -497,6 +510,11 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command,
         string.push_back(' ');
         string.append(stat_element->permissions.others);
         string.insert(string.end(), strlen("Others Permissions") - 3, ' ');
+      }
+      if (column == COLUMN_TYPE::SET_UID) {
+        string.push_back(' ');
+        string.append(stat_element->permissions.set_uid);
+        string.insert(string.end(), strlen("Set-UID") - 1, ' ');
       }
 #endif
       if (column == COLUMN_TYPE::LAST_MODIFICATION) {
@@ -612,6 +630,15 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
   stat_value->permissions.others[2] =
       get_mode(stat_buffer) & EXECUTE_PERMISSION_OTHERS ? 'X' : '-';
   stat_value->permissions.others[3] = '\0';
+
+  const bool uid_bit_set = get_mode(stat_buffer) & SET_UID_BIT;
+  memset(stat_value->permissions.set_uid, 0, 5);
+  if (uid_bit_set) {
+    strcat(stat_value->permissions.set_uid, "SET");
+  } else {
+    strcat(stat_value->permissions.set_uid, "NSET");
+  }
+
 #endif
 
   // YYYY-MM-DD HH:MM:SS
@@ -835,6 +862,9 @@ static bool should_return(struct StatResult *row,
         break;
       case Termsequel::COLUMN_TYPE::OTHERS_PERMISSIONS:
         compare_value.string_value = row->permissions.others;
+        break;
+      case Termsequel::COLUMN_TYPE::SET_UID:
+        compare_value.string_value = row->permissions.set_uid;
         break;
 #endif
       case Termsequel::COLUMN_TYPE::LAST_MODIFICATION:
