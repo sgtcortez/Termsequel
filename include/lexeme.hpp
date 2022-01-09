@@ -44,6 +44,7 @@ public:
 #ifdef __linux__
   static const LexemeType GROUP_PERMISSIONS;
   static const LexemeType OTHERS_PERMISSIONS;
+  static const LexemeType SET_UID;
 #endif
   static const LexemeType LAST_MODIFICATION;
   static const LexemeType CREATION_DATE;

@@ -124,6 +124,11 @@ $ termsequel 'SELECT NAME FROM /HOME'
             Returns the permissions of other users.    
             **Obs:** Only available for Linux.
 
+        + SET_UID
+
+            Returns *SET* if the setuid bit is setted. *NSET* otherwise.    
+            **Obs:** Only available for Linux.
+
         + LAST_MODIFICATION
 
             The datetime when the last modification ocurred.

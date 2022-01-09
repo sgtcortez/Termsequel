@@ -27,6 +27,7 @@ enum class COLUMN_TYPE {
 #ifdef __linux__
   GROUP_PERMISSIONS,  // permissions of the group
   OTHERS_PERMISSIONS, // permissions of others
+  SET_UID,            // set uid bit
 #endif
   LAST_MODIFICATION, // last modification of the file
   CREATION_DATE,     // The creation date of the file

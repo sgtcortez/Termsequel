@@ -127,6 +127,7 @@ void show_help(
 #ifdef __linux__
    output << "\n GROUP_PERMISSIONS  Group permissions";
    output << "\n OTHERS_PERMISSIONS Others permissions";
+   output << "\n SET_UID            Set UID bit";
 #endif
    output << "\n LAST_MODIFICATION  The last modification of the file";
    output << "\n CREATION_DATE      The creation date of the file";

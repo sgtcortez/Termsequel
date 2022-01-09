@@ -48,6 +48,8 @@ std::shared_ptr<Termsequel::Lexeme> parse_lexeme(const std::string string) {
   else if (string_equals(string, "OTHERS_PERMISSIONS"))
     return std::make_shared<Termsequel::Lexeme>(
         lexeme_type::OTHERS_PERMISSIONS);
+  else if (string_equals(string, "SET_UID"))
+    return std::make_shared<Termsequel::Lexeme>(lexeme_type::SET_UID);
 #endif
   else if (string_equals(string, "LAST_MODIFICATION"))
     return std::make_shared<Termsequel::Lexeme>(lexeme_type::LAST_MODIFICATION);
