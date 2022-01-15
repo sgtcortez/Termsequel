@@ -76,6 +76,7 @@ std::string format_number(const uint64_t size) {
 #define EXECUTE_PERMISSION_OTHERS S_IXOTH
 
 #define SET_UID_BIT S_ISUID
+#define SET_GID_BIT S_ISGID
 
 typedef struct statx stat_buffer_t;
 
@@ -195,6 +196,10 @@ struct StatResult {
     // set uid bit
     // Possible values are: SET and NSET
     char set_uid[5];
+
+    // set gid bit
+    // Possible values are: SET and NSET
+    char set_gid[5];
 
 #endif
   } permissions;
@@ -429,6 +434,10 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command,
       header.append(" Set-UID");
     }
 
+    if (column == COLUMN_TYPE::SET_GID) {
+      header.append(" Set-GID");
+    }
+
 #endif
     if (column == COLUMN_TYPE::LAST_MODIFICATION) {
       header.append(" Last Modification");
@@ -516,6 +525,12 @@ bool Termsequel::System::execute(const Termsequel::SystemCommand *command,
         string.append(stat_element->permissions.set_uid);
         string.insert(string.end(), strlen("Set-UID") - 1, ' ');
       }
+      if (column == COLUMN_TYPE::SET_GID) {
+        string.push_back(' ');
+        string.append(stat_element->permissions.set_gid);
+        string.insert(string.end(), strlen("Set-GID") - 1, ' ');
+      }
+
 #endif
       if (column == COLUMN_TYPE::LAST_MODIFICATION) {
         string.push_back(' ');
@@ -637,6 +652,14 @@ get_information(std::string name, Termsequel::ConditionList *conditions,
     strcat(stat_value->permissions.set_uid, "SET");
   } else {
     strcat(stat_value->permissions.set_uid, "NSET");
+  }
+
+  const bool gid_bit_set = get_mode(stat_buffer) & SET_GID_BIT;
+  memset(stat_value->permissions.set_gid, 0, 5);
+  if (gid_bit_set) {
+    strcat(stat_value->permissions.set_gid, "SET");
+  } else {
+    strcat(stat_value->permissions.set_gid, "NSET");
   }
 
 #endif
@@ -865,6 +888,9 @@ static bool should_return(struct StatResult *row,
         break;
       case Termsequel::COLUMN_TYPE::SET_UID:
         compare_value.string_value = row->permissions.set_uid;
+        break;
+      case Termsequel::COLUMN_TYPE::SET_GID:
+        compare_value.string_value = row->permissions.set_gid;
         break;
 #endif
       case Termsequel::COLUMN_TYPE::LAST_MODIFICATION:
