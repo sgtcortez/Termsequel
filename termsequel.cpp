@@ -128,6 +128,7 @@ void show_help(
    output << "\n GROUP_PERMISSIONS  Group permissions";
    output << "\n OTHERS_PERMISSIONS Others permissions";
    output << "\n SET_UID            Set UID bit";
+   output << "\n SET_GID            Set GID bit";
 #endif
    output << "\n LAST_MODIFICATION  The last modification of the file";
    output << "\n CREATION_DATE      The creation date of the file";

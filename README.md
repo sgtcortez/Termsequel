@@ -129,6 +129,11 @@ $ termsequel 'SELECT NAME FROM /HOME'
             Returns *SET* if the setuid bit is setted. *NSET* otherwise.    
             **Obs:** Only available for Linux.
 
+        + SET_GID
+
+            Returns *SET* if the setgid bit is setted. *NSET* otherwise.    
+            **Obs:** Only available for Linux.
+
         + LAST_MODIFICATION
 
             The datetime when the last modification ocurred.

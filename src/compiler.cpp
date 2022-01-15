@@ -40,6 +40,7 @@ void append_action(const Termsequel::Lexeme *lexeme,
       system_command->columns.push_back(column_type::GROUP_PERMISSIONS);
       system_command->columns.push_back(column_type::OTHERS_PERMISSIONS);
       system_command->columns.push_back(column_type::SET_UID);
+      system_command->columns.push_back(column_type::SET_GID);
 #endif
       system_command->columns.push_back(column_type::LAST_MODIFICATION);
       system_command->columns.push_back(column_type::CREATION_DATE);
@@ -74,6 +75,8 @@ void append_action(const Termsequel::Lexeme *lexeme,
         column = column_type::OTHERS_PERMISSIONS;
       else if (lexeme::SET_UID == lexeme->get_type())
         column = column_type::SET_UID;
+      else if (lexeme::SET_GID == lexeme->get_type())
+        column = column_type::SET_GID;
 #endif
       else if (lexeme::LAST_MODIFICATION == lexeme->get_type())
         column = column_type::LAST_MODIFICATION;

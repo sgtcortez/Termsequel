@@ -56,6 +56,7 @@ LexemeType const LexemeType::GROUP_PERMISSIONS(LexemeKey::COLUMN,
 LexemeType const LexemeType::OTHERS_PERMISSIONS(LexemeKey::COLUMN,
                                                 "OTHERS_PERMISSIONS");
 LexemeType const LexemeType::SET_UID(LexemeKey::COLUMN, "SET_UID");
+LexemeType const LexemeType::SET_GID(LexemeKey::COLUMN, "SET_GID");
 #endif
 LexemeType const LexemeType::LAST_MODIFICATION(LexemeKey::COLUMN,
                                                "LAST_MODIFICATION");
