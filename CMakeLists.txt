@@ -8,12 +8,6 @@ configure_file(termsequel.hpp.in termsequel.hpp)
 
 set(
     SOURCES
-    src/system.cpp
-    src/compiler.cpp
-    src/lexeme.cpp
-    src/lexical.cpp
-    src/syntax.cpp
-    src/command-line.cpp
     termsequel.cpp
 )
 
@@ -38,7 +32,7 @@ if(MSVC)
 else ()
     target_compile_options(
         ${PROJECT_NAME}
-        PRIVATE -Wall -Werror -Wextra
+        PRIVATE -Wall -Werror -g -Wextra
     )
     set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/executable)
 endif()
