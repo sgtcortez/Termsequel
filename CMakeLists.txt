@@ -11,6 +11,9 @@ set(
     termsequel.cpp
 )
 
+add_compile_definitions(DEBUG=1)
+
+
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(
