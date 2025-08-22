@@ -33,4 +33,6 @@
 
 # Cmake things
 build
-build/*
+build/*.build/
+.build/*
+.idea/*
