@@ -33,4 +33,10 @@
 
 # Cmake things
 build
-build/*
+build/*.build/*
+.build
+.cache
+.idea
+.vscode
+build/
+AGENTS.md

@@ -14,6 +14,7 @@
         + [WHERE](#WHERE)
         + [Variables](#Variables)
 - [Developers](#Developers)
+- [References](#references)
 
 # Termsequel
 
@@ -55,6 +56,14 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel) 
 
 - ## Installation
 
+    To compile, you can use this command: 
+    ```shell
+    cmake -B build/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ; cmake  --build build
+    ```
+
+    The `DCMAKE_EXPORT_COMPILE_COMMANDS` is to export the `clang` compile commands.   
+    So, we can easily use **clangd** tool.
+
     You will need [CMake](https://cmake.org/) and, one C++ compiler(clang, gcc, MSVC ...) to build the project!    
     Just, create a directory called `build` and, then execute:   
     ```shell
@@ -63,6 +72,12 @@ Open Source Project hosted on [Github](https://github.com/sgtcortez/Termsequel) 
     $ cmake --build .
     ```
     Since, this project is easy for CMake, it can detect the operating system and the available compiler.
+
+    To install it, use the `ENABLE_INSTALL` option, for example: 
+    ```shell
+    cmake -B build/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DENABLE_INSTALL=ON ; cmake  --build build
+    sudo cmake --install build
+    ```
 
 # Users
 
@@ -257,3 +272,9 @@ There are sections for developers to be able to join this project.
 - Code Style
 
     We are using the LLVM coding style in our project.
+
+# References
+
+- [Macros to get operation system](https://sourceforge.net/p/predef/wiki/OperatingSystems/)  
+- [MacOS stat systemcall](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/stat.2.html)
+- [FreeBSD stat systemcall](https://man.freebsd.org/cgi/man.cgi?stat(2))
